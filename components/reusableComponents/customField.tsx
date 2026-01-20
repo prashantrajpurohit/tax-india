@@ -82,10 +82,10 @@ const CustomField = ({
               <SelectContent>
                 {(options || []).map((val: any, index: number) => {
                   const value = String(
-                    val?._id ?? val?.id ?? val?.value ?? val?.name ?? val
+                    val?._id ?? val?.id ?? val?.value ?? val?.name ?? val,
                   );
                   const label = String(
-                    val?.name ?? val?.label ?? val?.value ?? val
+                    val?.name ?? val?.label ?? val?.value ?? val,
                   );
 
                   return (

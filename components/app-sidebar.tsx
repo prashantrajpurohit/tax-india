@@ -24,27 +24,10 @@ const data = {
   },
   versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
   navMain: routeConfig,
-  // navSecondary: [
-  //   {
-  //     title: "Settings",
-  //     url: "#",
-  //     icon: IconSettings,
-  //   },
-  //   {
-  //     title: "Get Help",
-  //     url: "#",
-  //     icon: IconHelp,
-  //   },
-  //   {
-  //     title: "Search",
-  //     url: "#",
-  //     icon: IconSearch,
-  //   },
-  // ],
+ 
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const router = useRouter();
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -54,10 +37,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <span>
-                {/* <Image src="/images/logo.png" alt="" width={100} height={80} /> */}
-                {/* <IconInnerShadowTop className="!size-5" /> */}
-                Logo
+              <span className="w-full flex items-center justify-center">
+                <img src="/images/logo.png" alt="logo" width={100} height={100} />
               </span>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -65,7 +46,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
