@@ -6,6 +6,8 @@ import { cn } from "@/config/utils/utils";
 import ClientLayoutSwitcher from "@/components/client-layout-switcher";
 import Providers from "./providers";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { ModuleRegistry } from "ag-grid-community";
+
 
 const META_THEME_COLORS = {
   light: "#fffff",
@@ -44,7 +46,7 @@ export default function RootLayout({
 
       <body
         className={cn(
-          "text-foreground group/body overscroll-none font-sans antialiased [--footer-height:calc(var(--spacing)*14)] [--header-height:calc(var(--spacing)*14)] xl:[--footer-height:calc(var(--spacing)*24)]"
+          "text-foreground group/body overscroll-none font-sans antialiased [--footer-height:calc(var(--spacing)*14)] [--header-height:calc(var(--spacing)*14)] xl:[--footer-height:calc(var(--spacing)*24)]",
         )}
       >
         <ErrorBoundary>
