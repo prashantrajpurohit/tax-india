@@ -38,6 +38,12 @@ export const routeConfig: MenuItem[] = [
   subject: "dashboard",
 },
 {
+  title: "user",
+  path: "/user",
+  icon: LayoutDashboard,
+  subject: "user",
+},
+{
   title: "Profile",
   path: "/profile",
   icon: User,
