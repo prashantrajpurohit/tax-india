@@ -1,6 +1,6 @@
 export const ApiUrl = {
-  BASE_URL: process.env.NEXT_PUBLIC_API_URL,
+  BASE_URL: "https://dyementor.com/main/api",
   IMAGE_BASE_URL: "https://storage.googleapis.com/saviour-visa/",
-  LOGIN_URL: `/auth/login`,
-  AUTH_LOGOUT: `/auth/logout`,
+  LOGIN_URL: `/login`,
+  AUTH_LOGOUT: `/logout`,
 };

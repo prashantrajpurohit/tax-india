@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useState } from "react";
 import { createContext } from "react";
 import { AnyMongoAbility } from "@casl/ability";
@@ -9,45 +9,52 @@ import NotAuthorized from "@/components/not-authorized";
 import { usePathname } from "next/navigation";
 
 const defaultACLObj: ACLObj = {
-    action: "manage",
-    subject: "all",
+  action: "manage",
+  subject: "all",
 };
 
 const AbilityContext = createContext<AbilityContextvalue>({
-    ability: undefined,
-    setAbility: () => null
+  ability: undefined,
+  setAbility: () => null,
 });
 
 const AbilityProvider = (props: AclGuardProps) => {
-    const auth = useAuth();
-    const pathname = usePathname();
-    const { aclAbilities, children } = props;
-    const [ability, setAbility] = useState<AnyMongoAbility | undefined>(undefined);
+  const auth = useAuth();
+  const pathname = usePathname();
+  const { aclAbilities, children } = props;
+  const [ability, setAbility] = useState<AnyMongoAbility | undefined>(
+    undefined,
+  );
 
-    if (pathname === "/404" || pathname === "/" || pathname === "/login" || pathname === "/register") {
-        return <>{children}</>;
-    } else if (!!auth.user && !!auth.user.role.value && !ability) {
-        const options = auth?.user?.role?.options?.map((ele) => ele.value)
-        setAbility(defineRulesFor(auth.user.role?.value,options));
-    } else if (ability && ability.can(aclAbilities.action ?? "read", aclAbilities.subject)) {
-        const values = {
-            ability,
-            setAbility,
-        };
+  if (
+    pathname === "/404" ||
+    pathname === "/" ||
+    pathname === "/login" ||
+    pathname === "/register"
+  ) {
+    return <>{children}</>;
+  } else if (!!auth.user && !!auth.user.role && !ability) {
+    const options = auth.user.options ?? [];
+    setAbility(defineRulesFor(auth.user.role, options));
+  } else if (
+    ability &&
+    ability.can(aclAbilities.action ?? "read", aclAbilities.subject)
+  ) {
+    const values = {
+      ability,
+      setAbility,
+    };
 
-        return (
-            <AbilityContext.Provider value={values}>
-                {children}
-            </AbilityContext.Provider>
-        )
-
-    } else {
-        return (
-            <NotAuthorized />
-        )
-    }
+    return (
+      <AbilityContext.Provider value={values}>
+        {children}
+      </AbilityContext.Provider>
+    );
+  } else {
+    return <NotAuthorized />;
+  }
 };
 
 export { AbilityProvider, AbilityContext, defaultACLObj };
 
-export const AbilityConsumer = AbilityContext.Consumer
+export const AbilityConsumer = AbilityContext.Consumer;

@@ -9,14 +9,16 @@ const httpRequest = axios.create({
 
 httpRequest.interceptors.request.use(
   (config) => {
-    config.withCredentials = true;
+    const token = localStorage.getItem("accessToken");
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error),
 );
-
 httpRequest.interceptors.response.use(
   (response) => {
     const status = response?.status;
@@ -48,7 +50,7 @@ httpRequest.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default httpRequest;

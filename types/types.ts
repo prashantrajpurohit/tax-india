@@ -28,7 +28,6 @@ export type NextPage<P = {}, IP = P> = NextComponentType<
   getLayout?: (page: ReactElement) => ReactNode;
 };
 
-
 // ==================== Authcontext types =========================== //
 
 export type ErrCallbackType = (err: { [key: string]: string }) => void;
@@ -58,13 +57,21 @@ interface Role {
 }
 
 export type UserDataType = {
-  id: string;
-  role: Role;
+  id: number;
+  name: string;
   email: string;
-  name?: string;
-  createdAt: string;
-  updatedAt: string;
-  phone?: string;
+  email_verified_at: string | null;
+  role: string;
+  options: string[];
+  mobile: string;
+  address: string;
+  city: string;
+  state: string;
+  pan_no: string;
+  aadhar_no: string;
+  register_pin: string | null;
+  status: number;
+  api_token: string;
 };
 
 export type AuthValuesType = {
@@ -73,8 +80,8 @@ export type AuthValuesType = {
   setUser: (value: UserDataType | null) => void;
   login: (params: LoginParams, errorCallback?: ErrCallbackType) => void;
   register: (params: RegisterParams, errorCallback?: ErrCallbackType) => void;
-  authLoading: boolean
-  setAuthLoading: (value: boolean) => void
+  authLoading: boolean;
+  setAuthLoading: (value: boolean) => void;
 };
 
 export type AbilityContextvalue = {
@@ -85,7 +92,6 @@ export type AbilityContextvalue = {
 //=============================== grid===========================//
 
 export type GridSpan = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
-
 
 //-----------------layout------------------//
 export interface MenuItem {

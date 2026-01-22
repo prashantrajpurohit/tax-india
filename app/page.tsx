@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import BlankLayout from "@/components/blank-layout";
 import FallbackSpinner from "@/components/reusableComponents/Fallback";
 import { useAuth } from "@/hooks/use-auth";
@@ -7,31 +7,30 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function Home() {
-  const router = useRouter()
+  const router = useRouter();
   const auth = useAuth();
 
   const getHomeRoute = (role: string) => {
-    if (role === "super-admin") {
-      return "/dashboard"
+    if (role === "admin") {
+      return "/dashboard";
     } else if (role === "staff") {
-      return "/404"
+      return "/404";
     } else {
-      return "/401"
+      return "/401";
     }
-  }
-
+  };
 
   useEffect(() => {
-    if (auth.user?.role) {
-      router.replace(getHomeRoute(auth.user?.role?.value))
-    }else{
-       router.replace("/login")
+    if (auth?.user?.role) {
+      router.replace(getHomeRoute(auth?.user?.role));
+    } else {
+      router.replace("/login");
     }
-  }, [router, auth.user?.role?.value])
+  }, [router, auth?.user?.role]);
 
   return (
     <BlankLayout>
-    <FallbackSpinner/>
+      <FallbackSpinner />
     </BlankLayout>
   );
 }

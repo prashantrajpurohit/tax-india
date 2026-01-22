@@ -60,14 +60,14 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="@container/card">
-        <CardHeader style={{ textAlign: "center" }}>
-          <CardTitle>Login to your account</CardTitle>
+      <Card className="@container/card border-0 shadow-none">
+        <CardHeader className="space-y-2 text-center">
+          <CardTitle className="text-2xl">Login to your account</CardTitle>
           <CardDescription>
             Enter your email below to login to your account
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-6 pb-6">
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-3">
