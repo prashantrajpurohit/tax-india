@@ -104,10 +104,10 @@ export const routeConfig: MenuItem[] = [
   subject: "print-pvc",
 },
 {
-  title: "Aadhaar Change",
-  path: "/aadhaar-change",
+  title: "Aadhar Change",
+  path: "/aadhar-change",
   icon: Edit,
-  subject: "aadhaar-change",
+  subject: "aadhar-change",
 },
 {
   title: "Download Voter Card",
