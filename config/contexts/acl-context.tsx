@@ -22,6 +22,7 @@ const AbilityProvider = (props: AclGuardProps) => {
   const auth = useAuth();
   const pathname = usePathname();
   const { aclAbilities, children } = props;
+  const effectiveAcl = aclAbilities ?? defaultACLObj;
   const [ability, setAbility] = useState<AnyMongoAbility | undefined>(
     undefined,
   );
@@ -38,7 +39,7 @@ const AbilityProvider = (props: AclGuardProps) => {
     setAbility(defineRulesFor(auth.user.role, options));
   } else if (
     ability &&
-    ability.can(aclAbilities.action ?? "read", aclAbilities.subject)
+    ability.can(effectiveAcl.action ?? "read", effectiveAcl.subject)
   ) {
     const values = {
       ability,

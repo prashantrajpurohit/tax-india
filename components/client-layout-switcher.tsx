@@ -1,5 +1,5 @@
 "use client";
-import { AbilityProvider } from "@/config/contexts/acl-context";
+import { AbilityProvider, defaultACLObj } from "@/config/contexts/acl-context";
 import { AuthProvider } from "@/config/contexts/auth-context";
 import BlankLayout from "@/components/blank-layout";
 import UserLayout from "@/components/user-layout";
@@ -40,10 +40,12 @@ export default function ClientLayoutSwitcher({
       })
   );
 
+  const aclConfig = config ?? defaultACLObj;
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <AbilityProvider aclAbilities={config as ACLObj}>
+        <AbilityProvider aclAbilities={aclConfig}>
           <RouteProgress />
           {!!config ? (
             <UserLayout>{children}</UserLayout>
