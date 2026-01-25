@@ -3,4 +3,6 @@ export const ApiUrl = {
   IMAGE_BASE_URL: "https://storage.googleapis.com/saviour-visa/",
   LOGIN_URL: `/login`,
   AUTH_LOGOUT: `/logout`,
+  ROLE_NAMES_URL: `/role-names`,
+  ROLE_MODULES_URL: `/role-modules`,
 };

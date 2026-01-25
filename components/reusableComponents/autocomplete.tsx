@@ -12,7 +12,7 @@ import { FormField, FormLabel, FormMessage } from "@/ui/form";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/ui/popover";
 
-import { cn } from "@/utils/utils";
+import { cn } from "@/config/utils/utils";
 import { ChevronsUpDown, X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { useFormContext, useWatch } from "react-hook-form";

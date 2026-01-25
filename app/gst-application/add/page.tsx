@@ -34,9 +34,9 @@ const schema = z.object({
   comments: z.string().optional(),
   passportPhoto: z.any().optional(),
   otherDocument: z.any().optional(),
-  docPancard: z.boolean().default(false),
-  docAadhaar: z.boolean().default(false),
-  docBankProof: z.boolean().default(false),
+  docPancard: z.boolean(),
+  docAadhaar: z.boolean(),
+  docBankProof: z.boolean(),
   gstRegistrationCharge: z.coerce
     .number()
     .min(0, "GST registration charge is required"),

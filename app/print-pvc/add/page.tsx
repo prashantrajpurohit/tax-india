@@ -25,7 +25,7 @@ const schema = z.object({
   attachmentFile: z.any().optional(),
   attachmentPassword: z.string().optional(),
   comments: z.string().optional(),
-  editPvcApplication: z.boolean().default(false),
+  editPvcApplication: z.boolean(),
   pvcPrintCharge: z.coerce.number().min(0, "PVC print charge is required"),
   totalCharge: z.coerce.number().min(0, "Total charge is required"),
 });
