@@ -13,6 +13,7 @@ import {
   SidebarMenuItem,
 } from "@/ui/sidebar";
 import { routeConfig } from "@/navigation/navigation";
+import { Separator } from "@/ui/separator";
 
 const data = {
   user: {
@@ -22,12 +23,11 @@ const data = {
   },
   versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
   navMain: routeConfig,
- 
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -36,7 +36,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <span className="w-full flex items-center justify-center">
-                <img src="/images/logo.png" alt="logo" width={100} height={100} />
+                <img
+                  src="/images/logo.png"
+                  alt="logo"
+                  className="h-10 w-auto object-contain group-data-[collapsible=icon]:h-8"
+                />
               </span>
             </SidebarMenuButton>
           </SidebarMenuItem>

@@ -1,7 +1,5 @@
 import { AgGridReact } from "ag-grid-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-// import "ag-grid-community/styles/ag-grid.css";
-// import "ag-grid-community/styles/ag-theme-alpine.css";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
@@ -72,8 +70,9 @@ const AgGridTable = <T extends Record<string, unknown>>({
     ? `ag-theme-quartz ag-grid-table ${className}`
     : "ag-theme-quartz ag-grid-table";
 
-  const rowsPerPageOptions =
-    paginationConfig?.rowsPerPageOptions ?? [10, 25, 50];
+  const rowsPerPageOptions = paginationConfig?.rowsPerPageOptions ?? [
+    10, 25, 50,
+  ];
   const [rowsPerPage, setRowsPerPage] = useState(
     paginationConfig?.initialRowsPerPage ?? rowsPerPageOptions[0],
   );
