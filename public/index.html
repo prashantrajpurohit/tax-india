@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#fffff" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <script>
+      try {
+        var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        var theme =
+          localStorage.theme === "dark" ||
+          ((!("theme" in localStorage) || localStorage.theme === "system") &&
+            prefersDark)
+            ? "dark"
+            : "light";
+        var themeColorMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeColorMeta) {
+          themeColorMeta.setAttribute("content", theme === "dark" ? "#09090b" : "#fffff");
+        }
+        if (localStorage.layout) {
+          document.documentElement.classList.add("layout-" + localStorage.layout);
+        }
+      } catch (e) {}
+    </script>
+    <title>Shadcn Starter | Admin</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>
