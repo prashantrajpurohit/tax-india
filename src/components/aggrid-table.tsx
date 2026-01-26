@@ -1,5 +1,5 @@
 import { AgGridReact } from "ag-grid-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
@@ -45,6 +45,7 @@ const defaultColDef = {
   filter: true,
   resizable: true,
   minWidth: 120,
+  flex: 1,
 };
 
 const AgGridTable = <T extends Record<string, unknown>>({
@@ -130,21 +131,6 @@ const AgGridTable = <T extends Record<string, unknown>>({
       ),
     [pagedRows, columnMap],
   );
-  const autoSizeColumns = useCallback(() => {
-    const api = gridRef.current?.api;
-    if (!api) {
-      return;
-    }
-    const allColumns = api.getColumns() ?? [];
-    if (allColumns.length === 0) {
-      return;
-    }
-    api.autoSizeColumns(
-      allColumns.map((column) => column.getColId()),
-      true,
-    );
-  }, []);
-
   return (
     <div className="space-y-6">
       <div className="overflow-hidden rounded-lg border">
@@ -160,8 +146,6 @@ const AgGridTable = <T extends Record<string, unknown>>({
               rowHeight={52}
               suppressMovableColumns
               theme="legacy"
-              onGridReady={autoSizeColumns}
-              onFirstDataRendered={autoSizeColumns}
             />
           ) : (
             <div className="flex h-full items-center justify-center text-sm text-muted-foreground">

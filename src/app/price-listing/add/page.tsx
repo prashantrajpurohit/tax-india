@@ -3,12 +3,15 @@
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
+import { useSelector, useDispatch } from "react-redux";
 import CustomField from "@/components/reusableComponents/customField";
 import { Button } from "@/ui/button";
 import { Card, CardContent } from "@/ui/card";
 import { Form } from "@/ui/form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { StoreRootState } from "@/reduxstore/redux-store";
+import { setPriceList, PriceListData } from "@/reduxstore/priceListSlice";
 
 const numberField = z.coerce.number().min(0, "Value is required").finite();
 
@@ -56,23 +59,36 @@ const fields: { name: keyof PriceFormValues; label: string }[] = [
   { name: "find_aadhar_card", label: "Find Aadhaar card" },
 ];
 
+const emptyDefaults: PriceFormValues = fields.reduce(
+  (acc, field) => ({ ...acc, [field.name]: 0 }),
+  {} as PriceFormValues,
+);
+
 function Page() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const existingPriceList = useSelector(
+    (state: StoreRootState) => state.data.priceList.priceList
+  );
+
+  const isEditMode = existingPriceList !== null;
+
   const form = useForm<PriceFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: fields.reduce(
-      (acc, field) => ({ ...acc, [field.name]: 0 }),
-      {} as Record<keyof PriceFormValues, number>,
-    ),
+    defaultValues: existingPriceList ?? emptyDefaults,
   });
 
   const onSubmit = (data: PriceFormValues) => {
-    console.log("Price listing submitted", data);
+    dispatch(setPriceList(data as PriceListData));
+    navigate("/price-listing");
   };
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold">Add Price Listing</h1>
+        <h1 className="text-2xl font-semibold">
+          {isEditMode ? "Edit Price Listing" : "Add Price Listing"}
+        </h1>
         <Button asChild variant="outline">
           <Link to="/price-listing">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -104,7 +120,7 @@ function Page() {
                     Reset
                   </Button>
                   <Button type="submit" variant="destructive">
-                    Save Prices
+                    {isEditMode ? "Update Prices" : "Save Prices"}
                   </Button>
                 </div>
               </form>

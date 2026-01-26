@@ -1,6 +1,7 @@
 import { persistConfig } from "./redux-config";
 import authSlice from "./authSlice";
 import editDataSlice from "./editIDataSlice";
+import priceListSlice from "./priceListSlice";
 import {
   AnyAction,
   combineReducers,
@@ -20,6 +21,7 @@ import {
 const appReducer = combineReducers({
   userdata: authSlice,
   editData: editDataSlice,
+  priceList: priceListSlice,
 });
 export type RootState = ReturnType<typeof appReducer>;
 const newrootReducer: Reducer<RootState, AnyAction> = (state, action) => {

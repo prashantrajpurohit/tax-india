@@ -1,102 +1,89 @@
-import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react"
+import { Users, FileText, CreditCard, BookOpen } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Button } from "@/ui/button";
+import { Card, CardContent } from "@/ui/card";
+import { LucideIcon } from "lucide-react";
 
-import { Badge } from "@/ui/badge"
-import {
-  Card,
-  CardAction,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/ui/card"
+type DashboardCard = {
+  title: string;
+  count: number | string;
+  link?: string;
+  icon: LucideIcon;
+};
+
+const dashboardCards: DashboardCard[] = [
+  {
+    title: "Staff Users",
+    count: 5,
+    link: "/staff",
+    icon: Users,
+  },
+  {
+    title: "Distributor Users",
+    count: 8,
+    link: "/distributor",
+    icon: Users,
+  },
+  {
+    title: "Retailer Users",
+    count: 348,
+    link: "/retailer",
+    icon: Users,
+  },
+  {
+    title: "ITR",
+    count: 7920,
+    link: "/itr-application",
+    icon: FileText,
+  },
+  {
+    title: "PAN CARD",
+    count: 28071,
+    link: "/pan-application",
+    icon: CreditCard,
+  },
+  {
+    title: "Ladger Users",
+    count: 0,
+    link: "/ladger",
+    icon: BookOpen,
+  },
+];
 
 export function SectionCards() {
   return (
-    <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs  @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>Total Revenue</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            $1,250.00
-          </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconTrendingUp />
-              +12.5%
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Trending up this month <IconTrendingUp className="size-4" />
-          </div>
-          <div className="text-muted-foreground">
-            Visitors for the last 6 months
-          </div>
-        </CardFooter>
-      </Card>
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>New Customers</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            1,234
-          </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconTrendingDown />
-              -20%
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Down 20% this period <IconTrendingDown className="size-4" />
-          </div>
-          <div className="text-muted-foreground">
-            Acquisition needs attention
-          </div>
-        </CardFooter>
-      </Card>
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>Active Accounts</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            45,678
-          </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconTrendingUp />
-              +12.5%
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Strong user retention <IconTrendingUp className="size-4" />
-          </div>
-          <div className="text-muted-foreground">Engagement exceed targets</div>
-        </CardFooter>
-      </Card>
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>Growth Rate</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            4.5%
-          </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconTrendingUp />
-              +4.5%
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Steady performance increase <IconTrendingUp className="size-4" />
-          </div>
-          <div className="text-muted-foreground">Meets growth projections</div>
-        </CardFooter>
-      </Card>
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-2xl font-semibold">Welcome to Dashboard administrator</h1>
+        <Button asChild variant="destructive">
+          <Link to="/referral/add">Referral New Account</Link>
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {dashboardCards.map((card) => {
+          const Icon = card.icon;
+          return (
+            <Link key={card.title} to={card.link || "#"}>
+              <Card className="group overflow-hidden transition-all hover:shadow-lg hover:border-primary/50">
+                <CardContent className="flex items-center gap-4 p-5">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    <Icon className="h-7 w-7" />
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-sm font-medium text-muted-foreground truncate">
+                      {card.title}
+                    </span>
+                    <span className="text-3xl font-bold tracking-tight">
+                      {card.count.toLocaleString()}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          );
+        })}
+      </div>
     </div>
-  )
+  );
 }

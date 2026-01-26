@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import CustomField from "@/components/reusableComponents/customField";
 import CustomTextarea from "@/components/reusableComponents/customTextarea";
 import { Button } from "@/ui/button";
@@ -49,7 +50,9 @@ const schema = z.object({
   otherDocument: z.any().optional(),
   otherProof: z.any().optional(),
   comments: z.string().optional(),
-  panApplicationFee: z.coerce.number().min(0, "PAN application fee is required"),
+  panApplicationFee: z.coerce
+    .number()
+    .min(0, "PAN application fee is required"),
   convenienceFee: z.coerce.number().min(0, "Convenience fee is required"),
   subtotal: z.coerce.number().min(0, "Subtotal is required"),
   total: z.coerce.number().min(0, "Total is required"),
@@ -60,6 +63,7 @@ type PanFormData = z.infer<typeof schema>;
 const agencyOptions = ["UTI", "NSDL"];
 
 function Page() {
+  const navigate = useNavigate();
   const form = useForm<PanFormData>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -117,7 +121,8 @@ function Page() {
   }, [agencyType, form]);
 
   React.useEffect(() => {
-    const subtotalValue = Number(panApplicationFee || 0) + Number(convenienceFee || 0);
+    const subtotalValue =
+      Number(panApplicationFee || 0) + Number(convenienceFee || 0);
     form.setValue("subtotal", subtotalValue, { shouldValidate: true });
     form.setValue("total", subtotalValue, { shouldValidate: true });
   }, [panApplicationFee, convenienceFee, form]);
@@ -130,115 +135,124 @@ function Page() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-semibold">Add New Pan Card</h1>
-        <Button type="button" variant="outline">
-          View Pan Card List
+        <Button type="button" variant="outline" onClick={() => navigate("/pan-application")}>
+          Back
         </Button>
       </div>
       <Card>
-        <CardContent>
+        <CardContent className="pt-6">
           <FormProvider {...form}>
-            <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
-              <div className="flex justify-end">
+            <form className="space-y-8" onSubmit={form.handleSubmit(onSubmit)}>
+              <div className="flex justify-end mb-2">
                 <Button type="button" variant="outline" size="sm">
                   Important Links and Download Forms
                 </Button>
               </div>
 
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                <FormField
-                  control={form.control}
-                  name="filledComplete"
-                  render={({ field }) => (
-                    <FormItem className="space-y-2">
-                      <FormLabel>Whether PAN application form is filled completely?</FormLabel>
-                      <div className="flex flex-wrap gap-4">
-                        <label className="flex items-center gap-2 text-sm">
-                          <input
-                            type="radio"
-                            className="h-4 w-4"
-                            checked={field.value === "yes"}
-                            onChange={() => field.onChange("yes")}
-                          />
-                          Yes - ₹ 10
-                        </label>
-                        <label className="flex items-center gap-2 text-sm">
-                          <input
-                            type="radio"
-                            className="h-4 w-4"
-                            checked={field.value === "no"}
-                            onChange={() => field.onChange("no")}
-                          />
-                          No
-                        </label>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="applicationType"
-                  render={({ field }) => (
-                    <FormItem className="space-y-2">
-                      <FormLabel>Type of Application</FormLabel>
-                      <div className="flex flex-wrap gap-4">
-                        <label className="flex items-center gap-2 text-sm">
-                          <input
-                            type="radio"
-                            className="h-4 w-4"
-                            checked={field.value === "new"}
-                            onChange={() => field.onChange("new")}
-                          />
-                          New
-                        </label>
-                        <label className="flex items-center gap-2 text-sm">
-                          <input
-                            type="radio"
-                            className="h-4 w-4"
-                            checked={field.value === "change"}
-                            onChange={() => field.onChange("change")}
-                          />
-                          Change/Reissue/Correction in PAN
-                        </label>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="deliveryType"
-                  render={({ field }) => (
-                    <FormItem className="space-y-2">
-                      <FormLabel>Delivery Type</FormLabel>
-                      <div className="flex flex-wrap gap-4">
-                        <label className="flex items-center gap-2 text-sm">
-                          <input
-                            type="radio"
-                            className="h-4 w-4"
-                            checked={field.value === "e-pan"}
-                            onChange={() => field.onChange("e-pan")}
-                          />
-                          Only E-PAN - ₹ 35
-                        </label>
-                        <label className="flex items-center gap-2 text-sm">
-                          <input
-                            type="radio"
-                            className="h-4 w-4"
-                            checked={field.value === "both"}
-                            onChange={() => field.onChange("both")}
-                          />
-                          Both E-PAN and Physical PAN
-                        </label>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <div className="space-y-4">
+                <h2 className="text-base font-semibold text-foreground border-b pb-2">
+                  Application Details
+                </h2>
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                  <FormField
+                    control={form.control}
+                    name="filledComplete"
+                    render={({ field }) => (
+                      <FormItem className="space-y-2">
+                        <FormLabel>
+                          Whether PAN application form is filled completely?
+                        </FormLabel>
+                        <div className="flex flex-wrap gap-4">
+                          <label className="flex items-center gap-2 text-sm">
+                            <input
+                              type="radio"
+                              className="h-4 w-4"
+                              checked={field.value === "yes"}
+                              onChange={() => field.onChange("yes")}
+                            />
+                            Yes - ₹ 10
+                          </label>
+                          <label className="flex items-center gap-2 text-sm">
+                            <input
+                              type="radio"
+                              className="h-4 w-4"
+                              checked={field.value === "no"}
+                              onChange={() => field.onChange("no")}
+                            />
+                            No
+                          </label>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="applicationType"
+                    render={({ field }) => (
+                      <FormItem className="space-y-2">
+                        <FormLabel>Type of Application</FormLabel>
+                        <div className="flex flex-wrap gap-4">
+                          <label className="flex items-center gap-2 text-sm">
+                            <input
+                              type="radio"
+                              className="h-4 w-4"
+                              checked={field.value === "new"}
+                              onChange={() => field.onChange("new")}
+                            />
+                            New
+                          </label>
+                          <label className="flex items-center gap-2 text-sm">
+                            <input
+                              type="radio"
+                              className="h-4 w-4"
+                              checked={field.value === "change"}
+                              onChange={() => field.onChange("change")}
+                            />
+                            Change/Reissue/Correction in PAN
+                          </label>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="deliveryType"
+                    render={({ field }) => (
+                      <FormItem className="space-y-2">
+                        <FormLabel>Delivery Type</FormLabel>
+                        <div className="flex flex-wrap gap-4">
+                          <label className="flex items-center gap-2 text-sm">
+                            <input
+                              type="radio"
+                              className="h-4 w-4"
+                              checked={field.value === "e-pan"}
+                              onChange={() => field.onChange("e-pan")}
+                            />
+                            Only E-PAN - ₹ 35
+                          </label>
+                          <label className="flex items-center gap-2 text-sm">
+                            <input
+                              type="radio"
+                              className="h-4 w-4"
+                              checked={field.value === "both"}
+                              onChange={() => field.onChange("both")}
+                            />
+                            Both E-PAN and Physical PAN
+                          </label>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
 
               <div className="space-y-4">
-                <h2 className="text-sm font-semibold">Additional information</h2>
+                <h2 className="text-base font-semibold text-foreground border-b pb-2">
+                  Additional Information
+                </h2>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <CustomField
                     name="customerName"
@@ -283,28 +297,42 @@ function Page() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-[1fr_1fr_1fr]">
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-[1fr_1fr_1fr]">
                 <div className="space-y-3">
-                  <h2 className="text-sm font-semibold">Proofs Attached</h2>
+                  <h2 className="text-base font-semibold text-foreground border-b pb-2">
+                    Proofs Attached
+                  </h2>
                   <div className="grid grid-cols-1 gap-2">
                     {[
                       { name: "proofDrivingLicense", label: "Driving License" },
                       { name: "proofVoterCard", label: "Voter Card" },
                       { name: "proofPassport", label: "Passport" },
-                      { name: "proofTenthCertificate", label: "10th Certificate" },
+                      {
+                        name: "proofTenthCertificate",
+                        label: "10th Certificate",
+                      },
                       { name: "proofAadhaarCard", label: "Aadhaar Card" },
-                      { name: "proofDeliverInShop", label: "Deliver In Shop + ₹ 50" },
-                      { name: "proofAffidavitDob", label: "Affidavit for Date of Birth + ₹ 60" },
+                      {
+                        name: "proofDeliverInShop",
+                        label: "Deliver In Shop + ₹ 50",
+                      },
+                      {
+                        name: "proofAffidavitDob",
+                        label: "Affidavit for Date of Birth + ₹ 60",
+                      },
                       { name: "proofNotaryTest", label: "Notary Test + ₹ 50" },
-                      { name: "proofBirthCertificate", label: "Birth Certificate" },
+                      {
+                        name: "proofBirthCertificate",
+                        label: "Birth Certificate",
+                      },
                       { name: "proofNotApplicable", label: "Not Applicable" },
                       {
                         name: "proofGazetteNameChange",
-                        label: "MP/MLA/Gazetted (In Case of Name Change) ₹ 300",
+                        label: "Name Correction ₹100",
                       },
                       {
                         name: "proofGazetteFatherName",
-                        label: "MP/MLA/Gazetted (In Case of Father Name) ₹ 300",
+                        label: "Father's Name Correction ₹100",
                       },
                     ].map((item) => (
                       <FormField
@@ -351,39 +379,44 @@ function Page() {
                 <div className="space-y-4" />
               </div>
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                {[
-                  { name: "aadhaarFront", label: "Aadhaar Card Front" },
-                  { name: "aadhaarBack", label: "Aadhaar Card Back" },
-                  { name: "photo", label: "Photo" },
-                  { name: "signature", label: "Signature" },
-                  { name: "otherDocument", label: "Other Document" },
-                  { name: "otherProof", label: "Other Proof" },
-                ].map((item) => (
-                  <FormField
-                    key={item.name}
-                    control={form.control}
-                    name={item.name as keyof PanFormData}
-                    render={({ field }) => {
-                      const { onChange, ...rest } = field;
-                      return (
-                        <FormItem>
-                          <FormLabel>{item.label}</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="file"
-                              {...rest}
-                              onChange={(event) =>
-                                onChange(event.target.files?.[0] ?? null)
-                              }
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      );
-                    }}
-                  />
-                ))}
+              <div className="space-y-4">
+                <h2 className="text-base font-semibold text-foreground border-b pb-2">
+                  Document Uploads
+                </h2>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                  {[
+                    { name: "aadhaarFront", label: "Aadhaar Card Front" },
+                    { name: "aadhaarBack", label: "Aadhaar Card Back" },
+                    { name: "photo", label: "Photo" },
+                    { name: "signature", label: "Signature" },
+                    { name: "otherDocument", label: "Other Document" },
+                    { name: "otherProof", label: "Other Proof" },
+                  ].map((item) => (
+                    <FormField
+                      key={item.name}
+                      control={form.control}
+                      name={item.name as keyof PanFormData}
+                      render={({ field }) => {
+                        const { onChange, ...rest } = field;
+                        return (
+                          <FormItem>
+                            <FormLabel>{item.label}</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="file"
+                                {...rest}
+                                onChange={(event) =>
+                                  onChange(event.target.files?.[0] ?? null)
+                                }
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
 
               <div className="max-w-md">
@@ -397,15 +430,22 @@ function Page() {
                 />
               </div>
 
-              <CustomTextarea
-                name="comments"
-                label="Any Comments"
-                placeholder=""
-                isLoading={false}
-              />
+              <div className="space-y-4">
+                <h2 className="text-base font-semibold text-foreground border-b pb-2">
+                  Comments
+                </h2>
+                <CustomTextarea
+                  name="comments"
+                  label="Any Comments"
+                  placeholder=""
+                  isLoading={false}
+                />
+              </div>
 
-              <div className="space-y-3">
-                <h2 className="text-sm font-semibold">Your Order Summary</h2>
+              <div className="space-y-4">
+                <h2 className="text-base font-semibold text-foreground border-b pb-2">
+                  Your Order Summary
+                </h2>
                 <div className="rounded-lg border">
                   <div className="grid grid-cols-1 gap-4 border-b px-4 py-3 md:grid-cols-2">
                     <CustomField
@@ -445,7 +485,8 @@ function Page() {
                   </div>
                 </div>
                 <p className="text-xs text-red-600">
-                  Note: Make sure all mandatory fields (marked with *) are filled.
+                  Note: Make sure all mandatory fields (marked with *) are
+                  filled.
                 </p>
               </div>
 

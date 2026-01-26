@@ -1,40 +1,55 @@
+"use client";
+
+import { useSelector } from "react-redux";
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
 import { Link } from "react-router-dom";
 import { IndianRupee, Pencil, Plus } from "lucide-react";
+import { StoreRootState } from "@/reduxstore/redux-store";
+import { PriceListData } from "@/reduxstore/priceListSlice";
 
-// Dummy data matching the form fields (null means no prices configured yet)
-const priceData: { label: string; value: number }[] | null = [
-  { label: "PAN Application Form Filled Fees", value: 50 },
-  { label: "PAN Application Fees", value: 107 },
-  { label: "Convenience Fees", value: 25 },
-  { label: "Delivery Fees", value: 50 },
-  { label: "Agency Type Fees", value: 30 },
-  { label: "Affidavit Date of Birth Fees", value: 100 },
-  { label: "Notary Test Fees", value: 75 },
-  { label: "Total Amount of PAN Card", value: 437 },
-  { label: "Deliver in Shop", value: 0 },
-  { label: "ITR Application Fees", value: 500 },
-  { label: "E-Verify Fees", value: 100 },
-  { label: "PVC Print Fees", value: 150 },
-  { label: "GST Fees", value: 1500 },
-  { label: "Aadhaar Card Address", value: 50 },
-  { label: "Old ITR", value: 750 },
-  { label: "MP/MLA/Gazetted", value: 200 },
-  { label: "Find PAN Card", value: 25 },
-  { label: "Find Aadhaar Card", value: 25 },
-];
-
-const hasPrices = priceData && priceData.length > 0;
+const fieldLabels: Record<keyof PriceListData, string> = {
+  pan_application_form_filled_fees: "PAN Application Form Filled Fees",
+  pan_application_fees: "PAN Application Fees",
+  convenience_fees: "Convenience Fees",
+  delivery_fees: "Delivery Fees",
+  agency_type_fees: "Agency Type Fees",
+  affidavit_date_of_birth_fees: "Affidavit Date of Birth Fees",
+  notary_test_fees: "Notary Test Fees",
+  total_amount_of_pan_card: "Total Amount of PAN Card",
+  deliver_in_shop: "Deliver in Shop",
+  itr_application_fees: "ITR Application Fees",
+  e_verify_fees: "E-Verify Fees",
+  pvc_print_fees: "PVC Print Fees",
+  gst_fees: "GST Fees",
+  aadhaar_card_address: "Aadhaar Card Address",
+  old_itr: "Old ITR",
+  mp_mla_gazetted: "MP/MLA/Gazetted",
+  find_pan_card: "Find PAN Card",
+  find_aadhar_card: "Find Aadhaar Card",
+};
 
 function Page() {
+  const priceList = useSelector(
+    (state: StoreRootState) => state.data.priceList.priceList
+  );
+
+  const hasPrices = priceList !== null;
+
+  const priceData = priceList
+    ? (Object.keys(fieldLabels) as (keyof PriceListData)[]).map((key) => ({
+        label: fieldLabels[key],
+        value: priceList[key],
+      }))
+    : [];
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-semibold">Price Listing</h1>
         {hasPrices ? (
           <Button asChild>
-            <Link to="/price-listing/edit">
+            <Link to="/price-listing/add">
               <Pencil className="mr-2 h-4 w-4" />
               Edit Prices
             </Link>
