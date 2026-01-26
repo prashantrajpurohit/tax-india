@@ -2,32 +2,19 @@
 
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormProvider, useForm } from "react-hook-form";
 import CustomField from "@/components/reusableComponents/customField";
-import { Button } from "@/ui/button";
-import { Card, CardContent } from "@/ui/card";
-import { Form } from "@/ui/form";
+import { Card } from "@/ui/card";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/ui/breadcrumb";
+import React from "react";
+import { FormProvider, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
-
-const schema = z.object({
-  name: z.string().min(1, "Name is required"),
-  shop_name: z.string().min(1, "Shop name is required"),
-  mobile_no: z
-    .string()
-    .min(10, "Mobile number must be at least 10 digits")
-    .max(10, "Mobile number must be 10 digits")
-    .regex(/^\d+$/, "Mobile number must contain only digits"),
-  address: z.string().min(1, "Address is required"),
-  status: z.string().min(1, "Status is required"),
-});
-
-type StaffFormValues = z.infer<typeof schema>;
-
-const statusOptions = [
-  { value: "active", label: "Active" },
-  { value: "inactive", label: "Inactive" },
-];
 
 function Page() {
   const form = useForm<StaffFormValues>({
@@ -46,70 +33,64 @@ function Page() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold">Add Staff</h1>
-        <Button asChild variant="outline">
-          <Link to="/staff">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to list
-          </Link>
-        </Button>
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/dashboard">Dashboard</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/staff">Staff</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Add</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h1 className="text-2xl font-semibold">Staff Add Page</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Add staff details and assign access information.
+            </p>
+          </div>
+        </div>
       </div>
-
-      <Card>
-        <CardContent>
-          <FormProvider {...form}>
-            <Form {...form}>
-              <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <CustomField
-                    name="name"
-                    label="Name"
-                    placeholder="Enter name"
-                    isLoading={false}
-                  />
-                  <CustomField
-                    name="shop_name"
-                    label="Shop Name"
-                    placeholder="Enter shop name"
-                    isLoading={false}
-                  />
-                  <CustomField
-                    name="mobile_no"
-                    label="Mobile No."
-                    placeholder="Enter mobile number"
-                    isLoading={false}
-                    type="tel"
-                  />
-                  <CustomField
-                    name="address"
-                    label="Address"
-                    placeholder="Enter address"
-                    isLoading={false}
-                  />
-                  <CustomField
-                    name="status"
-                    label="Status"
-                    placeholder="Select status"
-                    isLoading={false}
-                    select
-                    options={statusOptions}
-                  />
-                </div>
-
-                <div className="flex justify-end gap-2">
-                  <Button type="button" variant="outline" onClick={() => form.reset()}>
-                    Reset
-                  </Button>
-                  <Button type="submit" variant="destructive">
-                    Save Staff
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </FormProvider>
-        </CardContent>
+      <Card className="p-3">
+        <FormProvider {...form}>
+          <form className="space-y-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <CustomField
+                name=""
+                isLoading={false}
+                placeholder=""
+                defaultValue=""
+                label="Name"
+              />{" "}
+              <CustomField
+                name=""
+                isLoading={false}
+                placeholder=""
+                defaultValue=""
+                label="Name"
+              />{" "}
+              <CustomField
+                name=""
+                isLoading={false}
+                placeholder=""
+                defaultValue=""
+                label="Name"
+              />
+            </div>
+          </form>
+        </FormProvider>
       </Card>
     </div>
   );

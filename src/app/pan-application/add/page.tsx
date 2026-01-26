@@ -15,9 +15,18 @@ import {
 } from "@/ui/form";
 import { Input } from "@/ui/input";
 import { Checkbox } from "@/ui/checkbox";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/ui/breadcrumb";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
+import { Link } from "react-router-dom";
 
 const schema = z.object({
   filledComplete: z.enum(["yes", "no"]),
@@ -132,12 +141,35 @@ function Page() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold">Add New Pan Card</h1>
-        <Button type="button" variant="outline" onClick={() => navigate("/pan-application")}>
-          Back
-        </Button>
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/dashboard">Dashboard</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/pan-application">PAN Application</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Add</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h1 className="text-2xl font-semibold">Add New Pan Card</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Capture applicant details and documents to submit a PAN request.
+            </p>
+          </div>
+        </div>
       </div>
       <Card>
         <CardContent className="pt-6">
@@ -359,7 +391,7 @@ function Page() {
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-5">
                   <CustomField
                     name="aadhaarNumber"
                     label="Aadhaar Number"
@@ -447,7 +479,7 @@ function Page() {
                   Your Order Summary
                 </h2>
                 <div className="rounded-lg border">
-                  <div className="grid grid-cols-1 gap-4 border-b px-4 py-3 md:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-6 border-b px-4 py-4 md:grid-cols-2">
                     <CustomField
                       name="panApplicationFee"
                       label="PAN Application x 1"
@@ -465,7 +497,7 @@ function Page() {
                       isLoading={false}
                     />
                   </div>
-                  <div className="grid grid-cols-1 gap-4 border-b px-4 py-3 md:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-6 border-b px-4 py-4 md:grid-cols-2">
                     <CustomField
                       name="subtotal"
                       label="Subtotal"

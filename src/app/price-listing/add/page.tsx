@@ -8,10 +8,15 @@ import CustomField from "@/components/reusableComponents/customField";
 import { Button } from "@/ui/button";
 import { Card, CardContent } from "@/ui/card";
 import { Form } from "@/ui/form";
-import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
-import { StoreRootState } from "@/reduxstore/redux-store";
-import { setPriceList, PriceListData } from "@/reduxstore/priceListSlice";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/ui/breadcrumb";
+import { Link } from "react-router-dom";
 
 const numberField = z.coerce.number().min(0, "Value is required").finite();
 
@@ -84,25 +89,43 @@ function Page() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold">
-          {isEditMode ? "Edit Price Listing" : "Add Price Listing"}
-        </h1>
-        <Button asChild variant="outline">
-          <Link to="/price-listing">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to list
-          </Link>
-        </Button>
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/dashboard">Dashboard</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/price-listing">Price Listing</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Add</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h1 className="text-2xl font-semibold">Add Price Listing</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Manage service fees and update pricing in one place.
+            </p>
+          </div>
+        </div>
       </div>
 
       <Card>
-        <CardContent>
+        <CardContent className="py-6">
           <FormProvider {...form}>
             <Form {...form}>
-              <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <form className="space-y-8" onSubmit={form.handleSubmit(onSubmit)}>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
                   {fields.map(({ name, label }) => (
                     <CustomField
                       key={name}

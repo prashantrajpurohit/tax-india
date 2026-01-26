@@ -13,9 +13,18 @@ import {
   FormMessage,
 } from "@/ui/form";
 import { Input } from "@/ui/input";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/ui/breadcrumb";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
+import { Link } from "react-router-dom";
 
 const schema = z.object({
   personName: z.string().min(1, "Person name is required"),
@@ -57,18 +66,41 @@ function Page() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold">Find Pan Add</h1>
-        <Button type="button" variant="outline">
-          Find Pan List
-        </Button>
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/dashboard">Dashboard</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/find-pan-card">Find PAN Card</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Add</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h1 className="text-2xl font-semibold">Find Pan Add</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Submit the details needed to locate a PAN card record.
+            </p>
+          </div>
+        </div>
       </div>
       <Card>
-        <CardContent>
+        <CardContent className="py-6">
           <FormProvider {...form}>
-            <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <form className="space-y-8" onSubmit={form.handleSubmit(onSubmit)}>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <CustomField
                   name="personName"
                   label="Person Name"
@@ -117,7 +149,7 @@ function Page() {
                 <div className="border-b px-4 py-2 text-sm font-semibold">
                   Total Charges
                 </div>
-                <div className="grid grid-cols-1 gap-4 px-4 pb-4 pt-3 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-6 px-4 pb-6 pt-4 md:grid-cols-2">
                   <CustomField
                     name="findPanCharge"
                     label="Find Pan Card"
