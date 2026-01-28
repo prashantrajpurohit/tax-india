@@ -40,7 +40,11 @@ const AuthProvider = ({ children }: Props) => {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    if (!myUser?.isAuthenticated && pathname !== "/login") {
+    if (
+      !myUser?.isAuthenticated &&
+      pathname !== "/login" &&
+      pathname !== "/register"
+    ) {
       handleLogout();
     }
   }, [myUser?.isAuthenticated, pathname, navigate]);

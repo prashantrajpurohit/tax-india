@@ -1,10 +1,14 @@
 import RootLayout from "@/app/layout";
 import Home from "@/app/page";
 import Dashboard from "@/app/dashboard/page";
+import DistributorUsers from "@/app/distributor-users/page";
 import Login from "@/app/login/page";
+import Register from "@/app/register/page";
 import User from "@/app/user/page";
 import Staff from "@/app/staff/page";
 import StaffAdd from "@/app/staff/add/page";
+import RetailerUsers from "@/app/retailer-users/page";
+import DistributorUsersAdd from "@/app/distributor-users/add/page";
 import PanApplication from "@/app/pan-application/page";
 import PanApplicationAdd from "@/app/pan-application/add/page";
 import GstApplication from "@/app/gst-application/page";
@@ -34,11 +38,14 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/distributor-users" element={<DistributorUsers />} />
+        <Route path="/distributor-users/add" element={<DistributorUsersAdd />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/user" element={<User />} />
         <Route path="/staff" element={<Staff />} />
         <Route path="/staff/add" element={<StaffAdd />} />
-
+        <Route path="/retailer-users" element={<RetailerUsers />} />
         <Route path="/pan-application" element={<PanApplication />} />
         <Route path="/pan-application/add" element={<PanApplicationAdd />} />
         <Route path="/gst-application" element={<GstApplication />} />

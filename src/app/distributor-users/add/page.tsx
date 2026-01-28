@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { FormProvider, useForm } from "react-hook-form";
 import CustomField from "@/components/reusableComponents/customField";
 import { Button } from "@/ui/button";
 import { Card, CardContent } from "@/ui/card";
@@ -13,35 +14,34 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/ui/breadcrumb";
-import { FormProvider, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 
 const schema = z.object({
-  name: z.string().min(1, "Name is required"),
+  distributor_name: z.string().min(1, "Distributor name is required"),
   shop_name: z.string().min(1, "Shop name is required"),
   mobile_no: z.string().min(1, "Mobile number is required"),
   address: z.string().min(1, "Address is required"),
   status: z.string().min(1, "Status is required"),
 });
 
-type StaffFormValues = z.infer<typeof schema>;
+type DistributorFormValues = z.infer<typeof schema>;
 
-const statusOptions = ["Active", "Inactive"];
+const statusOptions = ["Approved", "Pending"];
 
-function Page() {
-  const form = useForm<StaffFormValues>({
+const Page = () => {
+  const form = useForm<DistributorFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      name: "",
+      distributor_name: "",
       shop_name: "",
       mobile_no: "",
       address: "",
-      status: "Active",
+      status: "Approved",
     },
   });
 
-  const onSubmit = (data: StaffFormValues) => {
-    console.log("Staff data submitted", data);
+  const onSubmit = (data: DistributorFormValues) => {
+    console.log("Distributor user submitted", data);
   };
 
   return (
@@ -57,7 +57,7 @@ function Page() {
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/staff">Staff</Link>
+                <Link to="/distributor-users">Distributor Users</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
@@ -68,23 +68,24 @@ function Page() {
         </Breadcrumb>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h1 className="text-2xl font-semibold">Staff Add Page</h1>
+            <h1 className="text-2xl font-semibold">Add Distributor User</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Add staff details and assign access information.
+              Add distributor details and set the account status.
             </p>
           </div>
         </div>
       </div>
+
       <Card>
         <CardContent className="p-6">
           <FormProvider {...form}>
             <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <CustomField
-                  name="name"
+                  name="distributor_name"
                   isLoading={false}
-                  placeholder="Enter staff name"
-                  label="Name"
+                  placeholder="Enter distributor name"
+                  label="Distributor Name"
                 />
                 <CustomField
                   name="shop_name"
@@ -96,13 +97,7 @@ function Page() {
                   name="mobile_no"
                   isLoading={false}
                   placeholder="Enter mobile number"
-                  label="Mobile No"
-                />
-                <CustomField
-                  name="address"
-                  isLoading={false}
-                  placeholder="Enter address"
-                  label="Address"
+                  label="Mobile Number"
                 />
                 <CustomField
                   name="status"
@@ -112,10 +107,18 @@ function Page() {
                   select
                   options={statusOptions}
                 />
+                <div className="md:col-span-2">
+                  <CustomField
+                    name="address"
+                    isLoading={false}
+                    placeholder="Enter address"
+                    label="Address"
+                  />
+                </div>
               </div>
               <div className="flex justify-end">
                 <Button type="submit" variant="destructive">
-                  Save Staff
+                  Save Distributor
                 </Button>
               </div>
             </form>
@@ -124,6 +127,6 @@ function Page() {
       </Card>
     </div>
   );
-}
+};
 
 export default Page;

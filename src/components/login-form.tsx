@@ -119,12 +119,15 @@ export function LoginForm({
                 </Button> */}
               </div>
             </div>
-            {/* <div className="mt-4 text-center text-sm">
+            <div className="mt-4 text-center text-sm text-slate-600">
               Don&apos;t have an account?{" "}
-              <a href="#" className="underline underline-offset-4">
+              <a
+                href="/register"
+                className="font-semibold text-emerald-600 hover:underline"
+              >
                 Sign up
               </a>
-            </div> */}
+            </div>
           </form>
         </CardContent>
       </Card>
