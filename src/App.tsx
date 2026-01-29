@@ -30,6 +30,7 @@ import PriceListingAdd from "@/app/price-listing/add/page";
 import Designation from "@/app/designation/page";
 import Module from "@/app/module/page";
 import NotFound from "@/app/not-found";
+import Pincode from "@/app/pincode/page";
 import { Route, Routes } from "react-router-dom";
 
 export default function App() {
@@ -43,6 +44,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/user" element={<User />} />
+        <Route path="/pincode" element={<Pincode />} />
         <Route path="/staff" element={<Staff />} />
         <Route path="/staff/add" element={<StaffAdd />} />
         <Route path="/retailer-users" element={<RetailerUsers />} />
