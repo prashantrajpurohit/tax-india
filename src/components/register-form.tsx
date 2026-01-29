@@ -37,8 +37,18 @@ const schema = z
     city: z.string().min(1, "City is required"),
     state: z.string().min(1, "State is required"),
     zip: z.string().min(1, "Zip is required"),
-    panNumber: z.string().optional(),
-    aadhaarNumber: z.string().optional(),
+    panNumber: z
+      .string()
+      .optional()
+      .refine((val) => !val || /^[A-Z]{5}[0-9]{4}[A-Z]$/.test(val), {
+        message: "PAN must be 10 characters (e.g. ABCDE1234F)",
+      }),
+    aadhaarNumber: z
+      .string()
+      .optional()
+      .refine((val) => !val || /^\d{12}$/.test(val), {
+        message: "Aadhaar must be exactly 12 digits",
+      }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
@@ -363,8 +373,14 @@ export function RegisterForm({
                       id="panNumber"
                       placeholder="Enter PAN number"
                       className={inputClassName}
+                      maxLength={10}
                       {...register("panNumber")}
                     />
+                    {errors.panNumber && (
+                      <p className="text-sm text-red-500">
+                        {errors.panNumber.message}
+                      </p>
+                    )}
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="aadhaarNumber">Adhaar Number</Label>
@@ -372,8 +388,14 @@ export function RegisterForm({
                       id="aadhaarNumber"
                       placeholder="Enter Aadhaar number"
                       className={inputClassName}
+                      maxLength={12}
                       {...register("aadhaarNumber")}
                     />
+                    {errors.aadhaarNumber && (
+                      <p className="text-sm text-red-500">
+                        {errors.aadhaarNumber.message}
+                      </p>
+                    )}
                   </div>
                 </>
               )}
