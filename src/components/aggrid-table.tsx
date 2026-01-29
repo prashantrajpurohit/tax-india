@@ -4,6 +4,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { Button } from "@/ui/button";
+import { Skeleton } from "@/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -29,6 +30,10 @@ type PaginationConfig = {
   initialPage?: number;
   onRowsPerPageChange?: (value: number) => void;
   onPageChange?: (page: number) => void;
+  manual?: boolean;
+  totalRows?: number;
+  currentPage?: number;
+  rowsPerPage?: number;
 };
 
 type AgGridTableProps<T extends Record<string, unknown>> = {
@@ -38,6 +43,7 @@ type AgGridTableProps<T extends Record<string, unknown>> = {
   className?: string;
   pagination?: boolean | PaginationConfig;
   emptyMessage?: string;
+  loading?: boolean;
 };
 
 const defaultColDef = {
@@ -55,6 +61,7 @@ const AgGridTable = <T extends Record<string, unknown>>({
   className,
   pagination,
   emptyMessage = "No data available in table",
+  loading = false,
 }: AgGridTableProps<T>) => {
   const gridRef = useRef<AgGridReact | null>(null);
   const paginationConfig =
@@ -71,9 +78,8 @@ const AgGridTable = <T extends Record<string, unknown>>({
     ? `ag-theme-quartz ag-grid-table ${className}`
     : "ag-theme-quartz ag-grid-table";
 
-  const rowsPerPageOptions = paginationConfig?.rowsPerPageOptions ?? [
-    10, 25, 50,
-  ];
+  const rowsPerPageOptions = paginationConfig?.rowsPerPageOptions ?? [10, 25, 50];
+  const manualPagination = Boolean(paginationConfig?.manual);
   const [rowsPerPage, setRowsPerPage] = useState(
     paginationConfig?.initialRowsPerPage ?? rowsPerPageOptions[0],
   );
@@ -81,42 +87,92 @@ const AgGridTable = <T extends Record<string, unknown>>({
     paginationConfig?.initialPage ?? 1,
   );
 
-  const totalRows = rows.length;
-  const totalPages = Math.max(1, Math.ceil(totalRows / rowsPerPage));
+  const effectiveRowsPerPage = manualPagination
+    ? paginationConfig?.rowsPerPage ?? rowsPerPageOptions[0]
+    : rowsPerPage;
+  const effectiveCurrentPage = manualPagination
+    ? paginationConfig?.currentPage ?? 1
+    : currentPage;
+  const totalRows = manualPagination
+    ? paginationConfig?.totalRows ?? rows.length
+    : rows.length;
+  const totalPages = Math.max(
+    1,
+    Math.ceil(totalRows / Math.max(1, effectiveRowsPerPage)),
+  );
   const safePage = paginationEnabled
-    ? Math.min(Math.max(1, currentPage), totalPages)
+    ? Math.min(Math.max(1, effectiveCurrentPage), totalPages)
     : 1;
-  const startIndex = totalRows === 0 ? 0 : (safePage - 1) * rowsPerPage + 1;
+  const startIndex =
+    totalRows === 0 ? 0 : (safePage - 1) * effectiveRowsPerPage + 1;
   const endIndex =
-    totalRows === 0 ? 0 : Math.min(safePage * rowsPerPage, totalRows);
+    totalRows === 0
+      ? 0
+      : Math.min(safePage * effectiveRowsPerPage, totalRows);
   const pageNumbers = Array.from(
     { length: totalPages },
     (_, index) => index + 1,
   );
+  const maxPageButtons = 7;
+  const visiblePages = useMemo(() => {
+    if (!paginationEnabled) {
+      return [];
+    }
+    if (totalPages <= maxPageButtons) {
+      return pageNumbers;
+    }
+
+    const firstPage = 1;
+    const lastPage = totalPages;
+    const siblingCount = 1;
+    const current = safePage;
+    const leftBoundary = Math.max(current - siblingCount, 2);
+    const rightBoundary = Math.min(current + siblingCount, totalPages - 1);
+    const showLeftEllipsis = leftBoundary > 2;
+    const showRightEllipsis = rightBoundary < totalPages - 1;
+
+    const pages: (number | "ellipsis")[] = [firstPage];
+
+    if (showLeftEllipsis) {
+      pages.push("ellipsis");
+    }
+
+    for (let page = leftBoundary; page <= rightBoundary; page += 1) {
+      pages.push(page);
+    }
+
+    if (showRightEllipsis) {
+      pages.push("ellipsis");
+    }
+
+    pages.push(lastPage);
+
+    return pages;
+  }, [paginationEnabled, totalPages, pageNumbers, safePage]);
 
   useEffect(() => {
-    if (!paginationEnabled) {
+    if (!paginationEnabled || manualPagination) {
       return;
     }
     setCurrentPage(1);
-  }, [rowsPerPage, totalRows, paginationEnabled]);
+  }, [rowsPerPage, totalRows, paginationEnabled, manualPagination]);
 
   useEffect(() => {
-    if (!paginationEnabled) {
+    if (!paginationEnabled || manualPagination) {
       return;
     }
     if (currentPage > totalPages) {
       setCurrentPage(totalPages);
     }
-  }, [currentPage, totalPages, paginationEnabled]);
+  }, [currentPage, totalPages, paginationEnabled, manualPagination]);
 
   const pagedRows = useMemo(() => {
-    if (!paginationEnabled) {
+    if (!paginationEnabled || manualPagination) {
       return rows;
     }
     const start = (safePage - 1) * rowsPerPage;
     return rows.slice(start, start + rowsPerPage);
-  }, [paginationEnabled, rows, rowsPerPage, safePage]);
+  }, [paginationEnabled, manualPagination, rows, rowsPerPage, safePage]);
 
   const res = useMemo(
     () =>
@@ -135,7 +191,13 @@ const AgGridTable = <T extends Record<string, unknown>>({
     <div className="space-y-6">
       <div className="overflow-hidden rounded-lg border">
         <div className={themeClassName} style={containerStyle}>
-          {res.length > 0 ? (
+          {loading ? (
+            <div className="space-y-3 p-4">
+              {Array.from({ length: 8 }).map((_, index) => (
+                <Skeleton key={index} className="h-10 w-full" />
+              ))}
+            </div>
+          ) : res.length > 0 ? (
             <AgGridReact
               ref={gridRef}
               rowData={res}
@@ -160,14 +222,16 @@ const AgGridTable = <T extends Record<string, unknown>>({
           <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
             <div className="flex items-center gap-2">
               <span>Rows per page</span>
-              <Select
-                value={String(rowsPerPage)}
-                onValueChange={(value) => {
-                  const nextValue = Number(value);
-                  setRowsPerPage(nextValue);
-                  paginationConfig?.onRowsPerPageChange?.(nextValue);
-                }}
-              >
+                <Select
+                  value={String(effectiveRowsPerPage)}
+                  onValueChange={(value) => {
+                    const nextValue = Number(value);
+                    if (!manualPagination) {
+                      setRowsPerPage(nextValue);
+                    }
+                    paginationConfig?.onRowsPerPageChange?.(nextValue);
+                  }}
+                >
                 <SelectTrigger id="rows-per-page" className="h-9 w-20">
                   <SelectValue placeholder="10" />
                 </SelectTrigger>
@@ -192,7 +256,9 @@ const AgGridTable = <T extends Record<string, unknown>>({
               size="icon"
               disabled={safePage === 1}
               onClick={() => {
-                setCurrentPage(1);
+                if (!manualPagination) {
+                  setCurrentPage(1);
+                }
                 paginationConfig?.onPageChange?.(1);
               }}
             >
@@ -204,32 +270,47 @@ const AgGridTable = <T extends Record<string, unknown>>({
               disabled={safePage === 1}
               onClick={() => {
                 const nextPage = Math.max(1, safePage - 1);
-                setCurrentPage(nextPage);
+                if (!manualPagination) {
+                  setCurrentPage(nextPage);
+                }
                 paginationConfig?.onPageChange?.(nextPage);
               }}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            {pageNumbers.map((pageNumber) => (
-              <Button
-                key={pageNumber}
-                size="icon"
+            {visiblePages.map((pageNumber, index) =>
+              pageNumber === "ellipsis" ? (
+                <span
+                  key={`ellipsis-${index}`}
+                  className="px-2 text-muted-foreground"
+                >
+                  ...
+                </span>
+              ) : (
+                <Button
+                  key={pageNumber}
+                  size="icon"
                 variant={pageNumber === safePage ? "default" : "outline"}
                 onClick={() => {
-                  setCurrentPage(pageNumber);
+                  if (!manualPagination) {
+                    setCurrentPage(pageNumber);
+                  }
                   paginationConfig?.onPageChange?.(pageNumber);
                 }}
               >
-                {pageNumber}
-              </Button>
-            ))}
+                  {pageNumber}
+                </Button>
+              ),
+            )}
             <Button
               variant="outline"
               size="icon"
               disabled={safePage === totalPages}
               onClick={() => {
                 const nextPage = Math.min(totalPages, safePage + 1);
-                setCurrentPage(nextPage);
+                if (!manualPagination) {
+                  setCurrentPage(nextPage);
+                }
                 paginationConfig?.onPageChange?.(nextPage);
               }}
             >
@@ -240,7 +321,9 @@ const AgGridTable = <T extends Record<string, unknown>>({
               size="icon"
               disabled={safePage === totalPages}
               onClick={() => {
-                setCurrentPage(totalPages);
+                if (!manualPagination) {
+                  setCurrentPage(totalPages);
+                }
                 paginationConfig?.onPageChange?.(totalPages);
               }}
             >

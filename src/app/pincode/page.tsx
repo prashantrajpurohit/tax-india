@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { Button } from "@/ui/button";
 import { Card, CardContent } from "@/ui/card";
@@ -14,10 +14,10 @@ import {
 } from "@/ui/select";
 import { Search } from "lucide-react";
 import AgGridTable from "@/components/aggrid-table";
-import { useNavigate } from "react-router-dom";
 import httpRequest from "@/config/api/AxiosInterseptor";
 import { ApiUrl } from "@/config/api/apiUrls";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 const statusFilters = [{ label: "Approved" }, { label: "Pending" }];
 
@@ -39,24 +39,38 @@ type PincodeRow = {
 };
 
 const page = () => {
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const { data: rows = [], isLoading } = useQuery<PincodeRow[]>({
-    queryKey: ["registration-codes"],
-    queryFn: async () => {
-      const response = await httpRequest.get(ApiUrl.REGISTRATION_CODE_URL);
-      const payload = response?.data?.data ?? response?.data ?? [];
+  const [pageNumber, setPageNumber] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const { data, isLoading, error } = useQuery<{
+    rows: PincodeRow[];
+    total: number;
+  }>({
+    queryKey: ["registration-codes", pageNumber, rowsPerPage],
+    queryFn: async (): Promise<{ rows: PincodeRow[]; total: number }> => {
+      const response = await httpRequest.get(
+        `${ApiUrl.REGISTRATION_CODE_URL}/${pageNumber}?per_page=${rowsPerPage}`,
+      );
+      const payload = response?.data?.data ?? response?.data ?? {};
       const list = Array.isArray(payload)
         ? payload
         : Array.isArray(payload?.data)
           ? payload.data
-          : [];
+          : Array.isArray(payload?.items)
+            ? payload.items
+            : [];
+      const total =
+        payload?.total ??
+        response?.data?.total ??
+        response?.data?.data?.total ??
+        list.length;
 
-      return list.map((item: any, index: number) => {
+      const pageItems = list.slice(0, rowsPerPage);
+      const rows = pageItems.map((item: any, index: number) => {
         const statusValue =
           typeof item?.status === "number"
-            ? item.status === 1
+            ? item.status === 0
               ? "Approved"
               : "Pending"
             : typeof item?.status === "string"
@@ -67,7 +81,7 @@ const page = () => {
 
         return {
           id: item?.id ?? index + 1,
-          serial: index + 1,
+          serial: (pageNumber - 1) * rowsPerPage + index + 1,
           pincode: String(
             item?.pincode ??
               item?.pin_code ??
@@ -79,35 +93,44 @@ const page = () => {
           status: statusValue,
         };
       });
+      return { rows, total };
     },
   });
-  const filteredRows = useMemo(() => {
-    const normalizedSearch = searchTerm.trim().toLowerCase();
-    return rows.filter((row) => {
-      const matchesStatus =
-        statusFilter === "all" || row.status === statusFilter;
+  const rows = data?.rows ?? [];
+  const totalRows = data?.total ?? rows.length;
 
-      if (!normalizedSearch) {
-        return matchesStatus;
-      }
+  useEffect(() => {
+    if (error) {
+      toast.error(
+        (error as any)?.response?.data?.message || "Failed to load pincodes",
+      );
+    }
+  }, [error]);
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+  const filteredRows = rows.filter((row) => {
+    const matchesStatus =
+      statusFilter === "all" || row.status === statusFilter;
 
-      const matchesSearch = [
-        row.pincode,
-        row.userName,
-        row.role,
-        row.email,
-        row.mobile,
-        row.status,
-      ]
-        .join(" ")
-        .toLowerCase()
-        .includes(normalizedSearch);
+    if (!normalizedSearch) {
+      return matchesStatus;
+    }
 
-      return matchesStatus && matchesSearch;
-    });
-  }, [searchTerm, statusFilter]);
+    const matchesSearch = [
+      row.pincode,
+      row.userName,
+      row.role,
+      row.email,
+      row.mobile,
+      row.status,
+    ]
+      .join(" ")
+      .toLowerCase()
+      .includes(normalizedSearch);
 
-  const gridRows = useMemo(() => filteredRows, [filteredRows]);
+    return matchesStatus && matchesSearch;
+  });
+
+  const gridRows = filteredRows;
 
   return (
     <div className="space-y-6">
@@ -172,10 +195,19 @@ const page = () => {
           <AgGridTable
             rows={gridRows}
             columnMap={columnMap}
-            pagination
-            emptyMessage={
-              isLoading ? "Loading pincodes..." : "No pincodes found"
-            }
+            loading={isLoading}
+            pagination={{
+              manual: true,
+              currentPage: pageNumber,
+              rowsPerPage,
+              totalRows,
+              onPageChange: (nextPage) => setPageNumber(nextPage),
+              onRowsPerPageChange: (value) => {
+                setRowsPerPage(value);
+                setPageNumber(1);
+              },
+            }}
+            emptyMessage="No pincodes found"
           />
         </CardContent>
       </Card>

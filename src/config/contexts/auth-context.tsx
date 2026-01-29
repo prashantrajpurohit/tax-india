@@ -12,6 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import { ApiUrl } from "../api/apiUrls";
 import httpRequest from "../api/AxiosInterseptor";
+import { useMutation } from "@tanstack/react-query";
 
 const defaultProvider: AuthValuesType = {
   user: null,
@@ -49,29 +50,30 @@ const AuthProvider = ({ children }: Props) => {
     }
   }, [myUser?.isAuthenticated, pathname, navigate]);
 
-  const handleLogin = async (params: LoginParams) => {
-    setAuthLoading(true);
-
-    try {
-      const response = await httpRequest.post(ApiUrl.LOGIN_URL, params);
+  const loginMutation = useMutation({
+    mutationFn: (params: LoginParams) =>
+      httpRequest.post(ApiUrl.LOGIN_URL, params),
+    onMutate: () => setAuthLoading(true),
+    onSuccess: (response) => {
       toast.success("Login Successfully");
-      console.log(response, "RES");
 
       const token = response?.data?.token;
       if (token) {
         localStorage.setItem("accessToken", token);
-        document.cookie = `api_token=${encodeURIComponent(token)}; Path=/; SameSite=Lax`;
+        document.cookie = `api_token=${encodeURIComponent(
+          token,
+        )}; Path=/; SameSite=Lax`;
       }
 
       setUser(response.data?.data);
       dispatch(login(response.data?.data));
       navigate("/", { replace: true });
-    } catch (error: any) {
+    },
+    onError: (error: any) => {
       toast.error(error?.response?.data?.message || "Login Failed");
-    } finally {
-      setAuthLoading(false);
-    }
-  };
+    },
+    onSettled: () => setAuthLoading(false),
+  });
 
   const authCheck = async () => {
     navigate("/login", { replace: true });
@@ -85,23 +87,32 @@ const AuthProvider = ({ children }: Props) => {
     authCheck();
   };
 
-  const handleRegister = async (params: RegisterParams) => {
-    setAuthLoading(true);
-
-    try {
+  const registerMutation = useMutation({
+    mutationFn: async (params: RegisterParams) => {
       const { referral_id, ...payload } = params;
       const referralId = referral_id || "3";
-      const response = await httpRequest.post(
+      return httpRequest.post(
         `${ApiUrl.REGISTER_URL}?referral_id=${encodeURIComponent(referralId)}`,
         payload,
       );
+    },
+    onMutate: () => setAuthLoading(true),
+    onSuccess: (response) => {
       toast.success(response?.data?.message || "Registration successful");
       navigate("/login", { replace: true });
-    } catch (error: any) {
+    },
+    onError: (error: any) => {
       toast.error(error?.response?.data?.message || "Registration failed");
-    } finally {
-      setAuthLoading(false);
-    }
+    },
+    onSettled: () => setAuthLoading(false),
+  });
+
+  const handleLogin = (params: LoginParams) => {
+    loginMutation.mutate(params);
+  };
+
+  const handleRegister = (params: RegisterParams) => {
+    registerMutation.mutate(params);
   };
 
   const values = {

@@ -15,6 +15,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import AgGridTable from "@/components/aggrid-table";
+import { useSelector } from "react-redux";
+import { StoreRootState } from "@/reduxstore/redux-store";
 
 const statusFilters = [
   { label: "Processing" },
@@ -91,6 +93,11 @@ const mockRows = [
 
 const page = () => {
   const navigate = useNavigate();
+  const role = useSelector(
+    (state: StoreRootState) => state?.data?.userdata?.user?.role,
+  );
+  const roleValue = typeof role === "string" ? role : role?.value;
+  const isAdmin = roleValue === "admin";
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const filteredRows = useMemo(() => {
@@ -141,12 +148,14 @@ const page = () => {
             Review, search, and manage GST applications in one place.
           </p>
         </div>
-        <Button
-          className="px-6"
-          onClick={() => navigate("/gst-application/add")}
-        >
-          Add GST Application
-        </Button>
+        {!isAdmin && (
+          <Button
+            className="px-6"
+            onClick={() => navigate("/gst-application/add")}
+          >
+            Add GST Application
+          </Button>
+        )}
       </div>
 
       <Card className="py-0">

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import CustomField from "@/components/reusableComponents/customField";
 import CustomTextarea from "@/components/reusableComponents/customTextarea";
 import { Button } from "@/ui/button";
@@ -27,6 +27,9 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
+import { PancardApis } from "@/app/pan-application/controller";
+import { useMutation } from "@tanstack/react-query";
 
 const schema = z.object({
   filledComplete: z.enum(["yes", "no"]),
@@ -73,6 +76,12 @@ const agencyOptions = ["UTI", "NSDL"];
 
 function Page() {
   const navigate = useNavigate();
+  const { addPancard, editPancard } = new PancardApis();
+  const { search } = useLocation();
+  const editId = React.useMemo(
+    () => new URLSearchParams(search).get("id"),
+    [search],
+  );
   const form = useForm<PanFormData>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -136,8 +145,69 @@ function Page() {
     form.setValue("total", subtotalValue, { shouldValidate: true });
   }, [panApplicationFee, convenienceFee, form]);
 
-  const onSubmit = (data: PanFormData) => {
-    console.log("PAN application submitted", data);
+  const submitMutation = useMutation({
+    mutationFn: async ({
+      payload,
+      editId: currentEditId,
+    }: {
+      payload: Record<string, string>;
+      editId: string | null;
+    }) => {
+      if (currentEditId) {
+        return editPancard({
+          body: payload,
+          id: encodeURIComponent(currentEditId),
+        });
+      }
+      return addPancard(payload);
+    },
+    onSuccess: (_, variables) => {
+      toast.success(
+        variables.editId
+          ? "PAN application updated"
+          : "PAN application created",
+      );
+      navigate("/pan-application");
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Request failed");
+    },
+  });
+
+  const onSubmit = async (data: PanFormData) => {
+    const payload = {
+      id: editId ?? undefined,
+      assementyear: "",
+      everify: "",
+      name: data.customerName,
+      father_name: data.fatherName,
+      dob: data.dob,
+      taxpayble: "",
+      account_number: "",
+      ifsc: "",
+      panno: "",
+      mobile: data.mobileNo,
+      adhaarno: data.aadhaarNumber,
+      itrcharge: "",
+      everifyt: "",
+      itr_fee: "",
+      payable_tax_fee: "",
+      olt_itr_fee: "",
+      totalamt: String(data.total ?? ""),
+      proof: "",
+      itr_application: "",
+      message: data.comments ?? "",
+      pan_application_form_filled_fees: String(data.panApplicationFee ?? ""),
+    };
+
+    await submitMutation.mutateAsync({
+      payload: Object.fromEntries(
+        Object.entries(payload).filter(
+          ([, value]) => value !== "" && value !== null && value !== undefined,
+        ),
+      ) as Record<string, string>,
+      editId,
+    });
   };
 
   return (
@@ -164,7 +234,9 @@ function Page() {
         </Breadcrumb>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h1 className="text-2xl font-semibold">Add New Pan Card</h1>
+            <h1 className="text-2xl font-semibold">
+              {editId ? "Update Pan Card" : "Add New Pan Card"}
+            </h1>
             <p className="mt-1 text-sm text-muted-foreground">
               Capture applicant details and documents to submit a PAN request.
             </p>
@@ -175,11 +247,11 @@ function Page() {
         <CardContent className="pt-6">
           <FormProvider {...form}>
             <form className="space-y-8" onSubmit={form.handleSubmit(onSubmit)}>
-              <div className="flex justify-end mb-2">
+              {/* <div className="flex justify-end mb-2">
                 <Button type="button" variant="outline" size="sm">
                   Important Links and Download Forms
                 </Button>
-              </div>
+              </div> */}
 
               <div className="space-y-4">
                 <h2 className="text-base font-semibold text-foreground border-b pb-2">
@@ -523,8 +595,12 @@ function Page() {
               </div>
 
               <div className="flex justify-center">
-                <Button type="submit" variant="destructive">
-                  Submit
+                <Button
+                  type="submit"
+                  variant="destructive"
+                  disabled={submitMutation.isPending}
+                >
+                  {submitMutation.isPending ? "Saving..." : "Submit"}
                 </Button>
               </div>
             </form>
