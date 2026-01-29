@@ -57,6 +57,12 @@ const AuthProvider = ({ children }: Props) => {
       toast.success("Login Successfully");
       console.log(response, "RES");
 
+      const token = response?.data?.token;
+      if (token) {
+        localStorage.setItem("accessToken", token);
+        document.cookie = `api_token=${encodeURIComponent(token)}; Path=/; SameSite=Lax`;
+      }
+
       setUser(response.data?.data);
       dispatch(login(response.data?.data));
       navigate("/", { replace: true });
@@ -79,8 +85,23 @@ const AuthProvider = ({ children }: Props) => {
     authCheck();
   };
 
-  const handleRegister = (params: RegisterParams) => {
-    console.log(params);
+  const handleRegister = async (params: RegisterParams) => {
+    setAuthLoading(true);
+
+    try {
+      const { referral_id, ...payload } = params;
+      const referralId = referral_id || "3";
+      const response = await httpRequest.post(
+        `${ApiUrl.REGISTER_URL}?referral_id=${encodeURIComponent(referralId)}`,
+        payload,
+      );
+      toast.success(response?.data?.message || "Registration successful");
+      navigate("/login", { replace: true });
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Registration failed");
+    } finally {
+      setAuthLoading(false);
+    }
   };
 
   const values = {

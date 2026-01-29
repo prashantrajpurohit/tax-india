@@ -15,7 +15,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useMemo, useState } from "react";
 
 const schema = z
@@ -56,6 +56,11 @@ export function RegisterForm({
 }: React.ComponentProps<"div">) {
   const auth = useAuth();
   const [step, setStep] = useState(0);
+  const { search } = useLocation();
+  const referralId = useMemo(
+    () => new URLSearchParams(search).get("referral_id") ?? "3",
+    [search],
+  );
   const {
     register,
     handleSubmit,
@@ -118,9 +123,18 @@ export function RegisterForm({
 
   const onSubmit = (data: RegisterFormValues) => {
     auth.register({
+      name: data.fullName,
       email: data.email,
-      username: data.fullName,
       password: data.password,
+      role: "retailer",
+      mobile: data.phone,
+      address: data.address,
+      state: data.state,
+      city: data.city,
+      pan_no: data.panNumber || undefined,
+      aadhar_no: data.aadhaarNumber || undefined,
+      register_pin: data.registrationPincode,
+      referral_id: referralId,
     });
   };
 

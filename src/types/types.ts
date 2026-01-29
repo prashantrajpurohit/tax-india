@@ -33,9 +33,18 @@ export type LoginParams = {
 };
 
 export type RegisterParams = {
+  name: string;
   email: string;
-  username: string;
   password: string;
+  role: string;
+  mobile: string;
+  address: string;
+  state: string;
+  city: string;
+  pan_no?: string;
+  aadhar_no?: string;
+  register_pin: string;
+  referral_id?: string;
 };
 
 interface Option {

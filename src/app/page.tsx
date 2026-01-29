@@ -12,6 +12,10 @@ export default function Home() {
   const getHomeRoute = (role: string) => {
     if (role === "admin") {
       return "/dashboard";
+    } else if (role === "distributor") {
+      return "/distributor-users";
+    } else if (role === "retailer") {
+      return "/retailer-users";
     } else if (role === "staff") {
       return "/404";
     } else {
