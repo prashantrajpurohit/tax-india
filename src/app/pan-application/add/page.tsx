@@ -175,28 +175,45 @@ function Page() {
   });
 
   const onSubmit = async (data: PanFormData) => {
+    const proofAttached = [
+      data.proofDrivingLicense ? "Driving License" : null,
+      data.proofVoterCard ? "Voter Card" : null,
+      data.proofPassport ? "Passport" : null,
+      data.proofTenthCertificate ? "10th Certificate" : null,
+      data.proofAadhaarCard ? "Aadhaar Card" : null,
+      data.proofBirthCertificate ? "Birth Certificate" : null,
+      data.proofNotApplicable ? "Not Applicable" : null,
+    ]
+      .filter(Boolean)
+      .join(",");
+
     const payload = {
       id: editId ?? undefined,
-      assementyear: "",
-      everify: "",
-      name: data.customerName,
-      father_name: data.fatherName,
+      pan_application: data.filledComplete === "yes" ? 1 : 0,
+      pan_type: data.applicationType === "change" ? 1 : 0,
+      indicate_changes:
+        data.applicationType === "change"
+          ? "name,fathername,dob"
+          : undefined,
+      customername: data.customerName,
+      fathername: data.fatherName,
+      customeremail: data.email,
+      mobno: data.mobileNo,
       dob: data.dob,
-      taxpayble: "",
-      account_number: "",
-      ifsc: "",
-      panno: "",
-      mobile: data.mobileNo,
-      adhaarno: data.aadhaarNumber,
-      itrcharge: "",
-      everifyt: "",
-      itr_fee: "",
-      payable_tax_fee: "",
-      olt_itr_fee: "",
-      totalamt: String(data.total ?? ""),
-      proof: "",
-      itr_application: "",
-      message: data.comments ?? "",
+      oldpan: "",
+      agency_type: data.agencyType === "NSDL" ? 1 : 0,
+      proof_attached: proofAttached || undefined,
+      aadhaarnumber: data.aadhaarNumber,
+      uploadfile: "",
+      uploadfile_aadhar_back: "",
+      uploadfile_pancard: "",
+      uploadfile_signature: "",
+      uploadfile_other_document: "",
+      uploadfile_other_proof: "",
+      comments: data.comments ?? "",
+      order_amount: String(data.total ?? ""),
+      pan_delivery: data.deliveryType === "both" ? 1 : 0,
+      convenience_fees: String(data.convenienceFee ?? ""),
       pan_application_form_filled_fees: String(data.panApplicationFee ?? ""),
     };
 
