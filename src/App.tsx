@@ -32,6 +32,7 @@ import Module from "@/app/module/page";
 import NotFound from "@/app/not-found";
 import Pincode from "@/app/pincode/page";
 import { Route, Routes } from "react-router-dom";
+import RetailerUsersAdd from "./app/retailer-users/add/page";
 
 export default function App() {
   return (
@@ -40,13 +41,17 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/distributor-users" element={<DistributorUsers />} />
-        <Route path="/distributor-users/add" element={<DistributorUsersAdd />} />
+        <Route
+          path="/distributor-users/add"
+          element={<DistributorUsersAdd />}
+        />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/user" element={<User />} />
         <Route path="/pincode" element={<Pincode />} />
         <Route path="/staff" element={<Staff />} />
         <Route path="/staff/add" element={<StaffAdd />} />
+        <Route path="/retailer-users/add" element={<RetailerUsersAdd />} />
         <Route path="/retailer-users" element={<RetailerUsers />} />
         <Route path="/pan-application" element={<PanApplication />} />
         <Route path="/pan-application/add" element={<PanApplicationAdd />} />
