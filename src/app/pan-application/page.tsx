@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/ui/button";
 import { Card, CardContent } from "@/ui/card";
@@ -15,8 +15,11 @@ import {
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import AgGridTable from "@/components/aggrid-table";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { StoreRootState } from "@/reduxstore/redux-store";
+import { useQuery } from "@tanstack/react-query";
+import httpRequest from "@/config/api/AxiosInterseptor";
+import { addEditData, addId } from "@/reduxstore/editIDataSlice";
 
 const statusFilters = [
   { label: "Processing" },
@@ -25,6 +28,14 @@ const statusFilters = [
   { label: "Complete" },
   { label: "Refund" },
 ];
+
+const statusMap: Record<string, number> = {
+  Processing: 1,
+  "Hold On": 2,
+  "Under Review": 3,
+  Complete: 4,
+  Refund: 5,
+};
 
 const columnMap = {
   Sno: "id",
@@ -39,66 +50,24 @@ const columnMap = {
   Action: "action",
 } as const;
 
-const mockRows = [
-  {
-    id: 1,
-    orderId: "PAN-1001",
-    shopkeeper: "Amit Sharma",
-    email: "amit@example.com",
-    shopName: "Sunrise Retail",
-    amount: 499,
-    name: "Amit Sharma",
-    mobile: "9876543210",
-    status: "Processing",
-  },
-  {
-    id: 2,
-    orderId: "PAN-1002",
-    shopkeeper: "Riya Singh",
-    email: "riya@example.com",
-    shopName: "Quick Mart",
-    amount: 299,
-    name: "Riya Singh",
-    mobile: "9898989898",
-    status: "Complete",
-  },
-  {
-    id: 3,
-    orderId: "PAN-1003",
-    shopkeeper: "Vikas Jain",
-    email: "vikas@example.com",
-    shopName: "Jain Store",
-    amount: 399,
-    name: "Vikas Jain",
-    mobile: "9123456780",
-    status: "Hold On",
-  },
-  {
-    id: 4,
-    orderId: "PAN-1004",
-    shopkeeper: "Neha Verma",
-    email: "neha@example.com",
-    shopName: "Verma Traders",
-    amount: 599,
-    name: "Neha Verma",
-    mobile: "9001122334",
-    status: "Under Review",
-  },
-  {
-    id: 5,
-    orderId: "PAN-1005",
-    shopkeeper: "Sahil Khan",
-    email: "sahil@example.com",
-    shopName: "City Hub",
-    amount: 449,
-    name: "Sahil Khan",
-    mobile: "9012345678",
-    status: "Refund",
-  },
-];
+  type PanRow = {
+    id: number;
+    serial: number;
+    orderId: string;
+    shopkeeper: string;
+  email: string;
+  shopName: string;
+  amount: number | string;
+  name: string;
+    mobile: string;
+    status: string;
+    action: string;
+    __raw?: any;
+  };
 
 const page = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const role = useSelector(
     (state: StoreRootState) => state?.data?.userdata?.user?.role,
   );
@@ -106,9 +75,92 @@ const page = () => {
   const isAdmin = roleValue === "admin";
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [pageNumber, setPageNumber] = useState(1);
+  const rowsPerPage = 10;
+
+  useEffect(() => {
+    setPageNumber(1);
+  }, [statusFilter]);
+
+  const statusParam =
+    statusFilter === "all" ? 1 : statusMap[statusFilter] ?? 1;
+
+  const {
+    data: panData,
+    isLoading,
+    isError,
+  } = useQuery<{ rows: PanRow[]; total: number }>({
+    queryKey: ["pancard-list", statusParam, pageNumber],
+    queryFn: async () => {
+      const response = await httpRequest.get(
+        `https://dyementor.com/main/api/pancard_list/${statusParam}/${pageNumber}`,
+      );
+      const payload = response?.data?.data ?? response?.data ?? {};
+      const list = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.data)
+          ? payload.data
+          : Array.isArray(payload?.items)
+            ? payload.items
+            : [];
+      const total =
+        payload?.total ??
+        response?.data?.total ??
+        response?.data?.data?.total ??
+        list.length;
+
+      const rows = list.map((item: any, index: number) => {
+        const statusValue =
+          typeof item?.status === "string"
+            ? item.status
+            : typeof item?.status === "number"
+              ? statusFilters[item.status - 1]?.label ?? "Processing"
+              : "Processing";
+
+        return {
+          id: item?.id ?? index + 1,
+          serial: (pageNumber - 1) * rowsPerPage + index + 1,
+          orderId:
+            item?.order_id ??
+            item?.ref_id ??
+            item?.orderId ??
+            `PAN-${(pageNumber - 1) * rowsPerPage + index + 1}`,
+          shopkeeper:
+            item?.shopkeeper ??
+            item?.retailer_name ??
+            item?.user_name ??
+            item?.created_by ??
+            "",
+          email: item?.email ?? item?.customeremail ?? "",
+          shopName: item?.shop_name ?? item?.shopName ?? "",
+          amount: item?.order_amount ?? item?.amount ?? item?.total ?? 0,
+          name:
+            item?.customername ??
+            item?.name ??
+            item?.full_name ??
+            [item?.first_name, item?.last_name].filter(Boolean).join(" ") ??
+            "",
+          mobile:
+            item?.mobile ??
+            item?.mobno ??
+            item?.mobile_no ??
+            item?.phone ??
+            "",
+          status: statusValue,
+          action: "View",
+          __raw: item,
+        };
+      });
+
+      return { rows, total };
+    },
+    staleTime: 1000 * 60 * 2,
+    refetchOnWindowFocus: false,
+  });
+
   const filteredRows = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
-    return mockRows.filter((row) => {
+    return (panData?.rows ?? []).filter((row) => {
       const matchesStatus =
         statusFilter === "all" || row.status === statusFilter;
 
@@ -132,17 +184,9 @@ const page = () => {
 
       return matchesStatus && matchesSearch;
     });
-  }, [searchTerm, statusFilter]);
+  }, [panData?.rows, searchTerm, statusFilter]);
 
-  const gridRows = useMemo(
-    () =>
-      filteredRows.map((row, index) => ({
-        ...row,
-        id: index + 1,
-        action: "View",
-      })),
-    [filteredRows],
-  );
+  const gridRows = filteredRows;
 
   return (
     <div className="space-y-6">
@@ -211,7 +255,39 @@ const page = () => {
 
       <Card className="overflow-hidden py-0">
         <CardContent className="space-y-6 pb-6 pt-6">
-          <AgGridTable rows={gridRows} columnMap={columnMap} pagination />
+          <AgGridTable
+            rows={gridRows}
+            columnMap={columnMap}
+            loading={isLoading}
+            actionColumn="Action"
+            onActionClick={(row) => {
+              const raw = (row as any)?.__raw ?? row;
+              const targetId =
+                raw?.id ??
+                raw?.ref_id ??
+                raw?.order_id ??
+                raw?.orderId;
+              dispatch(addEditData(raw));
+              dispatch(addId(targetId ? String(targetId) : null));
+              if (targetId) {
+                navigate(`/pan-application/add?id=${encodeURIComponent(String(targetId))}`);
+              }
+            }}
+            pagination={{
+              manual: true,
+              currentPage: pageNumber,
+              rowsPerPage,
+              totalRows: panData?.total ?? gridRows.length,
+              onPageChange: (nextPage) => setPageNumber(nextPage),
+            }}
+            emptyMessage={
+              isLoading
+                ? "Loading pan applications..."
+                : isError
+                  ? "Failed to load pan applications"
+                  : "No pan applications found"
+            }
+          />
         </CardContent>
       </Card>
     </div>

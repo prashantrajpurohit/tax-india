@@ -25,8 +25,7 @@ import PrintPvc from "@/app/print-pvc/page";
 import PrintPvcAdd from "@/app/print-pvc/add/page";
 import DownloadVoterCard from "@/app/download-voter-card/page";
 import DownloadVoterCardAdd from "@/app/download-voter-card/add/page";
-import PriceListing from "@/app/price-listing/page";
-import PriceListingAdd from "@/app/price-listing/add/page";
+import PriceListing from "./app/price-listing/page";
 import Designation from "@/app/designation/page";
 import Module from "@/app/module/page";
 import NotFound from "@/app/not-found";
@@ -73,7 +72,6 @@ export default function App() {
           element={<DownloadVoterCardAdd />}
         />
         <Route path="/price-listing" element={<PriceListing />} />
-        <Route path="/price-listing/add" element={<PriceListingAdd />} />
         <Route path="/designation" element={<Designation />} />
         <Route path="/module" element={<Module />} />
         <Route path="*" element={<NotFound />} />

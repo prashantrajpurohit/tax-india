@@ -19,8 +19,8 @@ import { StoreRootState } from "@/reduxstore/redux-store";
 
 const data = {
   user: {
-    name: "aakash",
-    email: "aakash@example.com",
+    name: "User",
+    email: "",
     avatar: "",
   },
   versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
@@ -31,6 +31,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const role = useSelector(
     (state: StoreRootState) => state?.data?.userdata?.user?.role,
   );
+  const user = useSelector((state: StoreRootState) => state?.data?.userdata?.user);
   const roleValue = typeof role === "string" ? role : role?.value;
   const isRetailer = roleValue === "retailer";
   const retailerAllowedPaths = new Set([
@@ -52,6 +53,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const navMain = isRetailer
     ? data.navMain.filter((item) => retailerAllowedPaths.has(item.path))
     : data.navMain;
+  const displayName = user?.name ?? data.user.name;
+  const displayEmail = user?.email ?? data.user.email;
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -77,7 +80,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser
+          user={{
+            name: displayName,
+            email: displayEmail,
+            avatar: data.user.avatar,
+          }}
+        />
       </SidebarFooter>
     </Sidebar>
   );

@@ -15,7 +15,7 @@ export default function Home() {
     } else if (role === "distributor") {
       return "/distributor-users";
     } else if (role === "retailer") {
-      return "/retailer-users";
+      return "/dashboard";
     } else if (role === "staff") {
       return "/404";
     } else {

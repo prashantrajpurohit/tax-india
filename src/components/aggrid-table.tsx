@@ -44,6 +44,8 @@ type AgGridTableProps<T extends Record<string, unknown>> = {
   pagination?: boolean | PaginationConfig;
   emptyMessage?: string;
   loading?: boolean;
+  actionColumn?: string;
+  onActionClick?: (row: T) => void;
 };
 
 const defaultColDef = {
@@ -62,14 +64,23 @@ const AgGridTable = <T extends Record<string, unknown>>({
   pagination,
   emptyMessage = "No data available in table",
   loading = false,
+  actionColumn,
+  onActionClick,
 }: AgGridTableProps<T>) => {
   const gridRef = useRef<AgGridReact | null>(null);
   const paginationConfig =
     typeof pagination === "object" ? pagination : undefined;
   const paginationEnabled = Boolean(pagination);
   const cols = useMemo(
-    () => Object.keys(columnMap).map((key) => ({ field: key })),
-    [columnMap],
+    () =>
+      Object.keys(columnMap).map((key) => ({
+        field: key,
+        cellStyle:
+          actionColumn && key === actionColumn
+            ? { cursor: "pointer" }
+            : undefined,
+      })),
+    [columnMap, actionColumn],
   );
 
   const containerStyle = useMemo(() => ({ height, width: "100%" }), [height]);
@@ -176,15 +187,16 @@ const AgGridTable = <T extends Record<string, unknown>>({
 
   const res = useMemo(
     () =>
-      pagedRows.map((item) =>
-        Object.entries(columnMap).reduce<Record<string, unknown>>(
+      pagedRows.map((item) => ({
+        ...Object.entries(columnMap).reduce<Record<string, unknown>>(
           (acc, [columnKey, fieldKey]) => ({
             ...acc,
             [columnKey]: item[fieldKey],
           }),
           {},
         ),
-      ),
+        __raw: item,
+      })),
     [pagedRows, columnMap],
   );
   return (
@@ -208,6 +220,17 @@ const AgGridTable = <T extends Record<string, unknown>>({
               rowHeight={52}
               suppressMovableColumns
               theme="legacy"
+              onCellClicked={(event) => {
+                if (!actionColumn || !onActionClick) {
+                  return;
+                }
+                if (event.colDef.field !== actionColumn) {
+                  return;
+                }
+                const row =
+                  (event.data as Record<string, unknown>)?.__raw ?? event.data;
+                onActionClick(row as T);
+              }}
             />
           ) : (
             <div className="flex h-full items-center justify-center text-sm text-muted-foreground">

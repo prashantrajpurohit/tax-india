@@ -6,7 +6,9 @@ interface Role {
 }
 
 interface User {
-  _id: string;
+  _id?: string;
+  id?: string | number;
+  wallet?: number;
   name: string;
   email: string;
   role: Role;

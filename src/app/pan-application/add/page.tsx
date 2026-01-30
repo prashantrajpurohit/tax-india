@@ -29,7 +29,10 @@ import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { PancardApis } from "@/app/pan-application/controller";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { PriceListController, type PriceListPayload } from "@/app/price-listing/controller";
+import { useSelector } from "react-redux";
+import { StoreRootState } from "@/reduxstore/redux-store";
 
 const schema = z.object({
   filledComplete: z.enum(["yes", "no"]),
@@ -77,6 +80,25 @@ const agencyOptions = ["UTI", "NSDL"];
 function Page() {
   const navigate = useNavigate();
   const { addPancard, editPancard } = new PancardApis();
+  const reduxUserId = useSelector((state: StoreRootState) => {
+    const user = state?.data?.userdata?.user as
+      | { _id?: string | number; id?: string | number }
+      | undefined;
+    return user?._id ?? user?.id;
+  });
+  const editData = useSelector(
+    (state: StoreRootState) => state?.data?.editData?.editData,
+  );
+  const userId =
+    reduxUserId ??
+    localStorage.getItem("user_id") ??
+    localStorage.getItem("userId") ??
+    localStorage.getItem("userid") ??
+    undefined;
+  const priceListController = React.useMemo(
+    () => new PriceListController(),
+    [],
+  );
   const { search } = useLocation();
   const editId = React.useMemo(
     () => new URLSearchParams(search).get("id"),
@@ -122,6 +144,65 @@ function Page() {
     },
   });
 
+  React.useEffect(() => {
+    if (!editId || !editData || form.formState.isDirty) {
+      return;
+    }
+
+    const proofList = String(editData?.proof_attached ?? "")
+      .split(",")
+      .map((item: string) => item.trim())
+      .filter(Boolean);
+    const hasProof = (label: string) => proofList.includes(label);
+
+    form.reset(
+      {
+        filledComplete: editData?.pan_application ? "yes" : "no",
+        applicationType: editData?.pan_type ? "change" : "new",
+        deliveryType: editData?.pan_delivery ? "both" : "e-pan",
+        customerName: editData?.customername ?? "",
+        fatherName: editData?.fathername ?? "",
+        email: editData?.customeremail ?? "",
+        mobileNo: editData?.mobile ?? editData?.mobno ?? "",
+        dob: editData?.dob ?? "",
+        aadhaarNumber: editData?.aadhaarnumber ?? "",
+        agencyType: editData?.agency_type ? "NSDL" : "UTI",
+        agencyTypeSecondary: editData?.agency_type ? "NSDL" : "UTI",
+        proofDrivingLicense: hasProof("Driving License"),
+        proofVoterCard: hasProof("Voter Card"),
+        proofPassport: hasProof("Passport"),
+        proofTenthCertificate: hasProof("10th Certificate"),
+        proofAadhaarCard: hasProof("Aadhaar Card"),
+        proofDeliverInShop:
+          hasProof("Deliver In Shop") || hasProof("Deliver In Shop + ₹ 50"),
+        proofAffidavitDob:
+          hasProof("Affidavit for Date of Birth") ||
+          hasProof("Affidavit for Date of Birth + ₹ 60"),
+        proofNotaryTest:
+          hasProof("Notary Test") || hasProof("Notary Test + ₹ 50"),
+        proofBirthCertificate: hasProof("Birth Certificate"),
+        proofNotApplicable: hasProof("Not Applicable"),
+        proofGazetteNameChange:
+          hasProof("Name Correction") ||
+          hasProof("Name Correction ₹100") ||
+          hasProof("MP/MLA/GAZETTED (IN CASE OF NAME CHANGE)"),
+        proofGazetteFatherName:
+          hasProof("Father's Name Correction") ||
+          hasProof("Father's Name Correction ₹100") ||
+          hasProof("MP/MLA/GAZETTED (IN CASE OF FATHER NAME)"),
+        comments: editData?.comments ?? "",
+        panApplicationFee: Number(editData?.pan_application_form_filled_fees ?? 0),
+        convenienceFee: Number(editData?.convenience_fees ?? 0),
+        subtotal: Number(editData?.subtotal ?? editData?.order_amount ?? 0),
+        total: Number(editData?.order_amount ?? 0),
+      },
+      { keepDefaultValues: true },
+    );
+  }, [editData, editId, form]);
+
+  const filledComplete = useWatch({ control: form.control, name: "filledComplete" });
+  const deliveryType = useWatch({ control: form.control, name: "deliveryType" });
+  const agencyType = useWatch({ control: form.control, name: "agencyType" });
   const panApplicationFee = useWatch({
     control: form.control,
     name: "panApplicationFee",
@@ -130,7 +211,28 @@ function Page() {
     control: form.control,
     name: "convenienceFee",
   });
-  const agencyType = useWatch({ control: form.control, name: "agencyType" });
+  const subtotal = useWatch({ control: form.control, name: "subtotal" });
+  const total = useWatch({ control: form.control, name: "total" });
+  const proofDeliverInShop = useWatch({
+    control: form.control,
+    name: "proofDeliverInShop",
+  });
+  const proofAffidavitDob = useWatch({
+    control: form.control,
+    name: "proofAffidavitDob",
+  });
+  const proofNotaryTest = useWatch({
+    control: form.control,
+    name: "proofNotaryTest",
+  });
+  const proofGazetteNameChange = useWatch({
+    control: form.control,
+    name: "proofGazetteNameChange",
+  });
+  const proofGazetteFatherName = useWatch({
+    control: form.control,
+    name: "proofGazetteFatherName",
+  });
 
   React.useEffect(() => {
     form.setValue("agencyTypeSecondary", agencyType || "UTI", {
@@ -138,12 +240,150 @@ function Page() {
     });
   }, [agencyType, form]);
 
+  const { data: priceListResponse } = useQuery({
+    queryKey: ["price-listing"],
+    queryFn: () => priceListController.getPriceList(),
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
+  });
+
+  const priceList = React.useMemo(() => {
+    const payload =
+      (priceListResponse as { data?: Partial<PriceListPayload> })?.data ??
+      (priceListResponse as Partial<PriceListPayload> | undefined);
+    return payload ?? null;
+  }, [priceListResponse]);
+
   React.useEffect(() => {
-    const subtotalValue =
-      Number(panApplicationFee || 0) + Number(convenienceFee || 0);
+    if (!priceList) {
+      return;
+    }
+
+    const toNumber = (value?: number) => Number(value ?? 0);
+    const toPrice = (value: number | undefined, fallback: number) => {
+      const numeric = Number(value ?? 0);
+      return Number.isFinite(numeric) && numeric > 0 ? numeric : fallback;
+    };
+
+    const panBaseFee = toNumber(priceList.pnamount);
+    const filledFee =
+      filledComplete === "yes" ? toNumber(priceList.filledcomplete) : 0;
+    const agencyFee =
+      agencyType === "NSDL" ? toNumber(priceList.agency_type_nsdl) : 0;
+    const deliveryFee =
+      deliveryType === "both" ? toNumber(priceList.deliveryfees) : 0;
+    const deliverInShopFee = proofDeliverInShop
+      ? toPrice(priceList.deliverinshop, 50)
+      : 0;
+    const affidavitFee = proofAffidavitDob
+      ? toPrice(priceList.affidavitproffatached, 60)
+      : 0;
+    const notaryFee = proofNotaryTest
+      ? toPrice(priceList.notaryproffatached, 50)
+      : 0;
+    const gazetteNameFee = proofGazetteNameChange
+      ? toPrice(priceList.mpmla, 100)
+      : 0;
+    const gazetteFatherFee = proofGazetteFatherName
+      ? toPrice(priceList.mpmla, 100)
+      : 0;
+
+    const basePanFee =
+      panBaseFee + filledFee + agencyFee + deliveryFee;
+    const convenienceFeeValue = toNumber(priceList.convfees);
+    const subtotalValue = basePanFee + convenienceFeeValue;
+    const extrasTotal =
+      deliverInShopFee +
+      affidavitFee +
+      notaryFee +
+      gazetteNameFee +
+      gazetteFatherFee;
+    const totalValue = subtotalValue + extrasTotal;
+
+    form.setValue("panApplicationFee", basePanFee, { shouldValidate: true });
+    form.setValue("convenienceFee", convenienceFeeValue, { shouldValidate: true });
     form.setValue("subtotal", subtotalValue, { shouldValidate: true });
-    form.setValue("total", subtotalValue, { shouldValidate: true });
-  }, [panApplicationFee, convenienceFee, form]);
+    form.setValue("total", totalValue, { shouldValidate: true });
+  }, [
+    agencyType,
+    deliveryType,
+    filledComplete,
+    form,
+    priceList,
+    proofAffidavitDob,
+    proofDeliverInShop,
+    proofGazetteFatherName,
+    proofGazetteNameChange,
+    proofNotaryTest,
+  ]);
+
+  const summaryRows = React.useMemo(() => {
+    const toNumber = (value?: number) => Number(value ?? 0);
+    const safeNumber = (value?: number) =>
+      Number.isFinite(Number(value)) ? Number(value) : 0;
+    const toPrice = (value: number | undefined, fallback: number) => {
+      const numeric = Number(value ?? 0);
+      return Number.isFinite(numeric) && numeric > 0 ? numeric : fallback;
+    };
+
+    const affidavitFee = proofAffidavitDob
+      ? toPrice(priceList?.affidavitproffatached, 60)
+      : 0;
+    const notaryFee = proofNotaryTest
+      ? toPrice(priceList?.notaryproffatached, 50)
+      : 0;
+    const deliverInShopFee = proofDeliverInShop
+      ? toPrice(priceList?.deliverinshop, 50)
+      : 0;
+    const gazetteNameFee = proofGazetteNameChange
+      ? toPrice(priceList?.mpmla, 100)
+      : 0;
+    const gazetteFatherFee = proofGazetteFatherName
+      ? toPrice(priceList?.mpmla, 100)
+      : 0;
+
+    const rows = [
+      { label: "PAN Application x 1", value: safeNumber(panApplicationFee) },
+      { label: "Convenience fees", value: safeNumber(convenienceFee) },
+      { label: "Subtotal", value: safeNumber(subtotal) },
+    ];
+
+    if (proofAffidavitDob) {
+      rows.push({ label: "Affidavit Proofs Attached", value: affidavitFee });
+    }
+    if (proofNotaryTest) {
+      rows.push({ label: "Notary Test Proofs Attached", value: notaryFee });
+    }
+    if (proofDeliverInShop) {
+      rows.push({ label: "Deliver In Shop", value: deliverInShopFee });
+    }
+    if (proofGazetteNameChange) {
+      rows.push({
+        label: "MP/MLA/GAZETTED (Name Change)",
+        value: gazetteNameFee,
+      });
+    }
+    if (proofGazetteFatherName) {
+      rows.push({
+        label: "MP/MLA/GAZETTED (Father Name)",
+        value: gazetteFatherFee,
+      });
+    }
+
+    rows.push({ label: "Total", value: safeNumber(total) });
+    return rows;
+  }, [
+    convenienceFee,
+    panApplicationFee,
+    priceList,
+    proofAffidavitDob,
+    proofDeliverInShop,
+    proofGazetteFatherName,
+    proofGazetteNameChange,
+    proofNotaryTest,
+    subtotal,
+    total,
+  ]);
 
   const submitMutation = useMutation({
     mutationFn: async ({
@@ -175,6 +415,25 @@ function Page() {
   });
 
   const onSubmit = async (data: PanFormData) => {
+    if (!userId) {
+      toast.error("User ID not found. Please log in again.");
+      return;
+    }
+
+    const getNextSerial = () => {
+      try {
+        const key = "pan_application_serial";
+        const current = Number(localStorage.getItem(key) ?? "0");
+        const next = Number.isFinite(current) && current >= 0 ? current + 1 : 1;
+        localStorage.setItem(key, String(next));
+        return next;
+      } catch {
+        return undefined;
+      }
+    };
+
+    const serialNo = editId ? undefined : getNextSerial();
+
     const proofAttached = [
       data.proofDrivingLicense ? "Driving License" : null,
       data.proofVoterCard ? "Voter Card" : null,
@@ -187,25 +446,40 @@ function Page() {
       .filter(Boolean)
       .join(",");
 
+    const indicateChanges = new Set<string>();
+    if (data.applicationType === "change") {
+      ["name", "fathername", "dob"].forEach((item) =>
+        indicateChanges.add(item),
+      );
+    }
+    if (data.proofGazetteNameChange) {
+      indicateChanges.add("name");
+    }
+    if (data.proofGazetteFatherName) {
+      indicateChanges.add("fathername");
+    }
+
     const payload = {
       id: editId ?? undefined,
       pan_application: data.filledComplete === "yes" ? 1 : 0,
       pan_type: data.applicationType === "change" ? 1 : 0,
-      indicate_changes:
-        data.applicationType === "change"
-          ? "name,fathername,dob"
-          : undefined,
+      indicate_changes: indicateChanges.size
+        ? Array.from(indicateChanges).join(",")
+        : undefined,
       customername: data.customerName,
       fathername: data.fatherName,
       customeremail: data.email,
-      mobno: data.mobileNo,
+      mobile: data.mobileNo,
       dob: data.dob,
       oldpan: "",
+      user_id: userId ?? undefined,
+      serial_no: serialNo,
       agency_type: data.agencyType === "NSDL" ? 1 : 0,
       proof_attached: proofAttached || undefined,
       aadhaarnumber: data.aadhaarNumber,
+      uploadfile_aadhar_front: "dummy",
       uploadfile: "",
-      uploadfile_aadhar_back: "",
+      uploadfile_aadhar_back: "dummy",
       uploadfile_pancard: "",
       uploadfile_signature: "",
       uploadfile_other_document: "",
@@ -568,43 +842,24 @@ function Page() {
                   Your Order Summary
                 </h2>
                 <div className="rounded-lg border">
-                  <div className="grid grid-cols-1 gap-6 border-b px-4 py-4 md:grid-cols-2">
-                    <CustomField
-                      name="panApplicationFee"
-                      label="PAN Application x 1"
-                      placeholder="0"
-                      type="number"
-                      disabled
-                      isLoading={false}
-                    />
-                    <CustomField
-                      name="convenienceFee"
-                      label="Convenience fees"
-                      placeholder="0"
-                      type="number"
-                      disabled
-                      isLoading={false}
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 gap-6 border-b px-4 py-4 md:grid-cols-2">
-                    <CustomField
-                      name="subtotal"
-                      label="Subtotal"
-                      placeholder="0"
-                      type="number"
-                      disabled
-                      isLoading={false}
-                    />
-                    <CustomField
-                      name="total"
-                      label="Total"
-                      placeholder="0"
-                      type="number"
-                      disabled
-                      isLoading={false}
-                    />
-                  </div>
+                  {summaryRows.map((row, index) => (
+                    <div
+                      key={`${row.label}-${index}`}
+                      className="grid grid-cols-2 border-b px-4 py-3 last:border-b-0"
+                    >
+                      <span className="text-sm font-medium text-muted-foreground">
+                        {row.label}
+                      </span>
+                      <span className="text-sm font-semibold text-right">
+                        {row.value}
+                      </span>
+                    </div>
+                  ))}
                 </div>
+                <input type="hidden" {...form.register("panApplicationFee")} />
+                <input type="hidden" {...form.register("convenienceFee")} />
+                <input type="hidden" {...form.register("subtotal")} />
+                <input type="hidden" {...form.register("total")} />
                 <p className="text-xs text-red-600">
                   Note: Make sure all mandatory fields (marked with *) are
                   filled.
